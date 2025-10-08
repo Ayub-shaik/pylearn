@@ -170,6 +170,19 @@ Local LLM answers, explains options (why/right/wrong), voice in/out works offlin
 Checklists
 
 P3.1 packages/llm
+[] LLM routing order: Browser(WebLLM) → Ollama@localhost → (Phase 6) Free web search.
+
+[] Ollama probe: 150–300 ms timeout to GET /api/tags; set llm.provider="ollama" if success.
+
+[] Model policy:
+
+Browser default pack: qwen2.5-instruct-1.5b (upgrade to 3B).
+
+Ollama policy: explain=llama3.1:8b | deepseek-r1:7b, code_hint=qwen2.5-coder:7b.
+
+[] Settings UI: Toggle “Use local Ollama if available”, model dropdown (persisted).
+
+[] Embeddings: Prefer pre-embedded lesson bank; if Ollama present and user enabled, allow local nomic-embed-text for custom material.
 
 [] Choose default browser model: Qwen2.5-Instruct 1.5B (WebGPU via WebLLM/MLC).
 
@@ -233,6 +246,12 @@ P4.1 App Shell
 
 [] IndexedDB schema for progress & telemetry.
 
+[] First-run model flow: Pick tiny/small pack; show estimated size + disk cache location.
+
+[] Fallbacks: If no WebGPU → CPU warn + allow “Use Ollama” if detected.
+
+[] Privacy page: Clarify on-device inference and optional Ollama usage.
+
 P4.2 Lesson Player
 
 [] Integrate core engine & ui-kit components.
@@ -288,6 +307,10 @@ P5.1 Shell & Reuse
 [] Share packages/core, ui-kit, llm, speech as much as possible.
 
 [] Native storage (SQLite/AsyncStorage) mapping.
+
+[] Model download manager: Pause/resume, Wi-Fi-only option.
+
+[] LAN Ollama (optional): Advanced setting with IP allowlist + TLS warning.
 
 P5.2 Voice
 
