@@ -1,0 +1,14 @@
+{
+  "kind": "track",
+  "id": "track.python.basics",
+  "title": "Python Basics",
+  "description": "Start with variables, types, and simple REPL practice.",
+  "summary": "Introductory path for first-time Python learners.",
+  "modules": [
+    {
+      "id": "module.python.basics.intro",
+      "title": "Getting Started",
+      "path": "./module-intro.json"
+    }
+  ]
+}

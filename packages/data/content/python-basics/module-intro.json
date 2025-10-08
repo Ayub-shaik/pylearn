@@ -1,0 +1,20 @@
+{
+  "kind": "module",
+  "id": "module.python.basics.intro",
+  "trackId": "track.python.basics",
+  "title": "Getting Started",
+  "description": "Ground students in variables, literals, and types.",
+  "summary": "Scaffold the REPL mindset and highlight how Python stores data.",
+  "lessons": [
+    {
+      "id": "lesson.python.basics.variables",
+      "title": "Variables in Python",
+      "path": "./lesson-001-variables.json"
+    },
+    {
+      "id": "lesson.python.basics.types",
+      "title": "Working with Types",
+      "path": "./lesson-002-types.json"
+    }
+  ]
+}

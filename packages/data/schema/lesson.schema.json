@@ -1,0 +1,360 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://pylearn.local/schema/lesson.schema.json",
+  "title": "PyLearn Curriculum Schema",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/Track"
+    },
+    {
+      "$ref": "#/$defs/Module"
+    },
+    {
+      "$ref": "#/$defs/Lesson"
+    }
+  ],
+  "$defs": {
+    "Identifier": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+([.-][a-z0-9]+)*$"
+    },
+    "HintGroup": {
+      "type": "object",
+      "properties": {
+        "H0": {
+          "type": "string",
+          "minLength": 1
+        },
+        "H1": {
+          "type": "string",
+          "minLength": 1
+        },
+        "H2": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": ["H0", "H1", "H2"],
+      "additionalProperties": false
+    },
+    "ModuleRef": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "path": {
+          "type": "string",
+          "pattern": "^[.]/.+[.]json$"
+        }
+      },
+      "required": ["id", "title", "path"],
+      "additionalProperties": false
+    },
+    "LessonRef": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "path": {
+          "type": "string",
+          "pattern": "^[.]/.+[.]json$"
+        }
+      },
+      "required": ["id", "title", "path"],
+      "additionalProperties": false
+    },
+    "Track": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "track"
+        },
+        "id": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string"
+        },
+        "summary": {
+          "type": "string"
+        },
+        "modules": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/ModuleRef"
+          }
+        }
+      },
+      "required": ["kind", "id", "title", "modules"],
+      "additionalProperties": false
+    },
+    "Module": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "module"
+        },
+        "id": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string"
+        },
+        "summary": {
+          "type": "string"
+        },
+        "trackId": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "lessons": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/LessonRef"
+          }
+        }
+      },
+      "required": ["kind", "id", "title", "trackId", "lessons"],
+      "additionalProperties": false
+    },
+    "QuizOption": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1
+        },
+        "isCorrect": {
+          "type": "boolean"
+        },
+        "explanation": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": ["id", "text", "isCorrect", "explanation"],
+      "additionalProperties": false
+    },
+    "NoteCheckpoint": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "type": {
+          "const": "note"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "content": {
+          "type": "string",
+          "minLength": 1
+        },
+        "explanation": {
+          "type": "string",
+          "minLength": 1
+        },
+        "hints": {
+          "$ref": "#/$defs/HintGroup"
+        }
+      },
+      "required": ["id", "type", "title", "content", "explanation", "hints"],
+      "additionalProperties": false
+    },
+    "QuizCheckpoint": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "type": {
+          "const": "quiz-mcq"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "content": {
+          "type": "string",
+          "minLength": 1
+        },
+        "hints": {
+          "$ref": "#/$defs/HintGroup"
+        },
+        "explanation": {
+          "type": "string",
+          "minLength": 1
+        },
+        "options": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "$ref": "#/$defs/QuizOption"
+          }
+        }
+      },
+      "required": ["id", "type", "title", "content", "hints", "options", "explanation"],
+      "additionalProperties": false
+    },
+    "FillBlankCheckpoint": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "type": {
+          "const": "fill-blank"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "content": {
+          "type": "string",
+          "minLength": 1
+        },
+        "hints": {
+          "$ref": "#/$defs/HintGroup"
+        },
+        "answer": {
+          "type": "string",
+          "minLength": 1
+        },
+        "explanation": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": ["id", "type", "title", "content", "hints", "answer", "explanation"],
+      "additionalProperties": false
+    },
+    "CodeCellCheckpoint": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "type": {
+          "const": "code-cell"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "content": {
+          "type": "string",
+          "minLength": 1
+        },
+        "hints": {
+          "$ref": "#/$defs/HintGroup"
+        },
+        "starterCode": {
+          "type": "string",
+          "minLength": 1
+        },
+        "solution": {
+          "type": "string",
+          "minLength": 1
+        },
+        "expectedOutput": {
+          "type": "string",
+          "minLength": 1
+        },
+        "explanation": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "title",
+        "content",
+        "hints",
+        "starterCode",
+        "solution",
+        "expectedOutput",
+        "explanation"
+      ],
+      "additionalProperties": false
+    },
+    "Checkpoint": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/NoteCheckpoint"
+        },
+        {
+          "$ref": "#/$defs/QuizCheckpoint"
+        },
+        {
+          "$ref": "#/$defs/FillBlankCheckpoint"
+        },
+        {
+          "$ref": "#/$defs/CodeCellCheckpoint"
+        }
+      ]
+    },
+    "Lesson": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "lesson"
+        },
+        "id": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string"
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1
+        },
+        "moduleId": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "durationMinutes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "checkpoints": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/Checkpoint"
+          }
+        }
+      },
+      "required": ["kind", "id", "title", "summary", "moduleId", "durationMinutes", "checkpoints"],
+      "additionalProperties": false
+    }
+  }
+}

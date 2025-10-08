@@ -1,0 +1,67 @@
+{
+  "kind": "lesson",
+  "id": "lesson.python.basics.variables",
+  "moduleId": "module.python.basics.intro",
+  "title": "Variables in Python",
+  "summary": "Introduce assignment, naming, and the REPL feedback cycle.",
+  "durationMinutes": 20,
+  "checkpoints": [
+    {
+      "id": "checkpoint.variables.note-setup",
+      "type": "note",
+      "title": "Why variables?",
+      "content": "Variables store references to objects. Python binds names to values at runtime.",
+      "explanation": "Use variables to avoid repeating literal values and to communicate intent.",
+      "hints": {
+        "H0": "Scan the sample REPL transcript and notice the arrow prompt.",
+        "H1": "Look at how the same number is reused after assigning it a name.",
+        "H2": "Names let you change one assignment instead of many literals."
+      }
+    },
+    {
+      "id": "checkpoint.variables.fill-assignment",
+      "type": "fill-blank",
+      "title": "Complete an assignment",
+      "content": "Complete the assignment so that the name `level` stores the result of `score + 1`.",
+      "answer": "level = score + 1",
+      "explanation": "Assignment uses a single equals sign to bind the expression's value to the name on the left.",
+      "hints": {
+        "H0": "Start by writing the name that should receive the value.",
+        "H1": "Remember Python evaluates the right-hand expression before binding.",
+        "H2": "Use `level = score + 1`."
+      }
+    },
+    {
+      "id": "checkpoint.variables.quiz-reassign",
+      "type": "quiz-mcq",
+      "title": "Predict reassignment",
+      "content": "After running `coins = 3` and then `coins = coins + 2`, what does `coins` hold?",
+      "options": [
+        {
+          "id": "option.variables.reassign.stays",
+          "text": "It stays at 3 because the original value is preserved.",
+          "isCorrect": false,
+          "explanation": "Reassignment updates the name to point at the new result."
+        },
+        {
+          "id": "option.variables.reassign.correct",
+          "text": "It becomes 5, the result of the expression.",
+          "isCorrect": true,
+          "explanation": "`coins + 2` evaluates to 5, and that value is bound back to `coins`."
+        },
+        {
+          "id": "option.variables.reassign.error",
+          "text": "It raises a NameError because coins is reused.",
+          "isCorrect": false,
+          "explanation": "Names can be reused—Python simply updates the reference."
+        }
+      ],
+      "explanation": "The second line rebinds `coins` to the new integer value produced by the expression.",
+      "hints": {
+        "H0": "Think about what `coins + 2` evaluates to given the current value.",
+        "H1": "When the expression runs, Python creates a new integer.",
+        "H2": "`coins` now points to 5."
+      }
+    }
+  ]
+}

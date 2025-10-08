@@ -1,0 +1,49 @@
+{
+  "name": "pylearn",
+  "private": true,
+  "packageManager": "pnpm@9.0.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "prepare": "husky install",
+    "lint": "eslint . --ext .ts,.tsx,.js,.jsx --max-warnings=0 --rule \"no-unused-vars: off\"",
+    "lint:fix": "eslint . --ext .ts,.tsx,.js,.jsx --fix",
+    "format": "prettier --write .",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "build": "echo \"(placeholder) build root workspaces\"",
+    "test": "echo \"(placeholder) run tests\" && exit 0",
+    "data:lint": "tsx scripts/data-lint.ts",
+    "dev": "pnpm --filter @pylearn/web dev"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.37.0",
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.1",
+    "@typescript-eslint/eslint-plugin": "^8.46.0",
+    "@typescript-eslint/parser": "^8.46.0",
+    "ajv": "^8.17.1",
+    "eslint": "^9.0.0",
+    "eslint-config-prettier": "^9.1.2",
+    "eslint-plugin-import": "^2.29.0",
+    "eslint-plugin-react": "^7.35.0",
+    "globals": "^16.4.0",
+    "husky": "^9.0.0",
+    "lint-staged": "^15.2.0",
+    "prettier": "^3.3.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "tsx": "^4.20.6",
+    "typescript": "^5.6.0"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx,json,md,yml,yaml}": [
+      "prettier --write"
+    ],
+    "*.{ts,tsx,js,jsx}": [
+      "eslint --fix"
+    ]
+  }
+}
