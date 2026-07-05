@@ -59,12 +59,34 @@ export function firstCheckpointOfLesson(
   return checkpoint ? { lessonId, checkpointId: checkpoint.id } : undefined;
 }
 
+/**
+ * Find the next checkpoint to work on: the current lesson's next
+ * unattempted checkpoint, or the first unattempted checkpoint of the next
+ * lesson going forward. Deliberately never looks at lessons before the
+ * current one — otherwise a learner who skipped an earlier lesson via
+ * onboarding placement would get yanked backward into it the moment they
+ * finish a checkpoint, since it remains "unattempted" forever. Skipped
+ * lessons stay reachable manually via Tracks, just not auto-advanced into.
+ */
 export function selectNextCheckpoint(
   track: Track,
   session: SessionState,
 ): CheckpointRef | undefined {
   const attempted = new Set(session.attempts.map((attempt) => attempt.checkpointId));
-  return flattenCheckpoints(track).find((ref) => !attempted.has(ref.checkpointId));
+  const orderedLessons = flattenLessons(track);
+  const currentIndex = session.currentLessonId
+    ? orderedLessons.findIndex((lesson) => lesson.id === session.currentLessonId)
+    : -1;
+  const searchFrom = currentIndex === -1 ? 0 : currentIndex;
+
+  for (let i = searchFrom; i < orderedLessons.length; i += 1) {
+    const lesson = orderedLessons[i];
+    const checkpoint = lesson.checkpoints.find((candidate) => !attempted.has(candidate.id));
+    if (checkpoint) {
+      return { lessonId: lesson.id, checkpointId: checkpoint.id };
+    }
+  }
+  return undefined;
 }
 
 export function submitAnswer(
@@ -161,18 +183,6 @@ function evaluateAttempt(checkpoint: Checkpoint | undefined, attempt: Attempt) {
 
 function flattenLessons(track: Track): Lesson[] {
   return track.modules.flatMap((module) => module.lessons);
-}
-
-function flattenCheckpoints(track: Track): CheckpointRef[] {
-  const refs: CheckpointRef[] = [];
-  for (const module of track.modules) {
-    for (const lesson of module.lessons) {
-      for (const checkpoint of lesson.checkpoints) {
-        refs.push({ lessonId: lesson.id, checkpointId: checkpoint.id });
-      }
-    }
-  }
-  return refs;
 }
 
 function findLesson(track: Track, lessonId?: string): Lesson | undefined {

@@ -49,6 +49,7 @@ export function Lesson(): ReactElement {
   const { lessonId } = useParams<{ lessonId: string }>();
   const {
     track,
+    session,
     loading,
     error,
     authStatus,
@@ -83,15 +84,25 @@ export function Lesson(): ReactElement {
     setChatLoading(false);
   }, [currentCheckpoint?.id]);
 
-  const lesson = useMemo(() => {
-    if (currentLesson) return currentLesson as LessonType;
-    if (!track || !lessonId) return undefined;
-    for (const module of track.modules) {
-      const candidate = module.lessons.find((item) => item.id === lessonId);
-      if (candidate) return candidate;
+  const lessonExistsInTrack = useMemo(() => {
+    if (!track || !lessonId) return false;
+    return track.modules.some((module) => module.lessons.some((item) => item.id === lessonId));
+  }, [track, lessonId]);
+
+  // The URL's lessonId is the source of truth for which lesson to show —
+  // sync the session's cursor to match whenever they differ (e.g. a
+  // bookmarked URL, browser back/forward, or a typed-in address), rather
+  // than always rendering whatever the session happened to be on.
+  useEffect(() => {
+    if (lessonExistsInTrack && lessonId && session && session.currentLessonId !== lessonId) {
+      void setActiveLesson(lessonId);
     }
-    return undefined;
-  }, [currentLesson, lessonId, track]);
+  }, [lessonExistsInTrack, lessonId, session, setActiveLesson]);
+
+  const lesson =
+    lessonExistsInTrack && currentLesson?.id === lessonId
+      ? (currentLesson as LessonType)
+      : undefined;
 
   useEffect(() => {
     if (
@@ -281,7 +292,7 @@ export function Lesson(): ReactElement {
     );
   }
 
-  if (!lesson || !track) {
+  if (!track || !lessonExistsInTrack) {
     return (
       <div className="card mx-auto max-w-2xl p-6">
         <h2 className="text-xl font-semibold text-white">Lesson</h2>
@@ -292,6 +303,15 @@ export function Lesson(): ReactElement {
           </Link>
           .
         </p>
+      </div>
+    );
+  }
+
+  if (!lesson) {
+    // Valid lessonId, but the session cursor hasn't synced to it yet.
+    return (
+      <div className="grid place-items-center py-24">
+        <Spinner label="Loading lesson…" />
       </div>
     );
   }
