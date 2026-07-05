@@ -24,21 +24,25 @@ export function registerGuestAuthRoutes(app: FastifyInstance): void {
     return;
   }
 
-  app.post<{ Body: GuestLoginBody }>('/api/auth/guest', async (request, reply) => {
-    const { username, password } = request.body ?? {};
-    if (
-      !config.devGuestLogin.username ||
-      username !== config.devGuestLogin.username ||
-      password !== config.devGuestLogin.password
-    ) {
-      reply.code(401).send({ error: 'Invalid guest credentials' });
-      return;
-    }
+  app.post<{ Body: GuestLoginBody }>(
+    '/api/auth/guest',
+    { config: { rateLimit: { max: 5, timeWindow: '1 minute' } } },
+    async (request, reply) => {
+      const { username, password } = request.body ?? {};
+      if (
+        !config.devGuestLogin.username ||
+        username !== config.devGuestLogin.username ||
+        password !== config.devGuestLogin.password
+      ) {
+        reply.code(401).send({ error: 'Invalid guest credentials' });
+        return;
+      }
 
-    const userId = await upsertGuestUser();
-    await createSession(reply, userId);
-    reply.send({ ok: true });
-  });
+      const userId = await upsertGuestUser();
+      await createSession(reply, userId);
+      reply.send({ ok: true });
+    },
+  );
 }
 
 async function upsertGuestUser(): Promise<string> {

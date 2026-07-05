@@ -16,8 +16,8 @@ COPY --from=deps /repo /repo
 COPY . .
 RUN pnpm --filter @pylearn/web build
 
-# ---- runtime: serve static build with nginx ----
-FROM nginx:1.27-alpine AS runtime
+# ---- runtime: serve static build with nginx, running as non-root ----
+FROM nginxinc/nginx-unprivileged:1.27-alpine AS runtime
 COPY infra/nginx/pylearn-web.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /repo/apps/web/dist /usr/share/nginx/html
 EXPOSE 8080

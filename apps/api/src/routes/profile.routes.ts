@@ -7,26 +7,33 @@ import { placeSessionAtStartingLevel } from '../learningSessions';
 
 import { getPythonBasicsTrack } from './tracks.routes';
 
+import { isStartingLevel } from '@pylearn/core';
+
 interface OnboardingBody {
   startingLevel: string;
   learningGoal: string;
 }
 
+const VALID_LEARNING_GOALS = new Set(['general', 'devops', 'network']);
+
 export function registerProfileRoutes(app: FastifyInstance): void {
   app.put<{ Body: OnboardingBody }>(
     '/api/profile/onboarding',
     { preHandler: requireAuth },
-    async (request) => {
+    async (request, reply) => {
+      const { startingLevel, learningGoal } = request.body ?? {};
+      if (!isStartingLevel(startingLevel) || !VALID_LEARNING_GOALS.has(learningGoal)) {
+        reply.code(400).send({ error: 'Invalid startingLevel or learningGoal' });
+        return;
+      }
+
       await db
         .update(schema.users)
-        .set({
-          startingLevel: request.body.startingLevel,
-          learningGoal: request.body.learningGoal,
-        })
+        .set({ startingLevel, learningGoal })
         .where(eq(schema.users.id, request.user!.id));
 
       const track = await getPythonBasicsTrack();
-      await placeSessionAtStartingLevel(request.user!.id, track, request.body.startingLevel);
+      await placeSessionAtStartingLevel(request.user!.id, track, startingLevel);
 
       return { ok: true };
     },

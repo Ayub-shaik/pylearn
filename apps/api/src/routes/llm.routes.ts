@@ -25,10 +25,15 @@ interface ChatRequestBody {
 
 const MAX_CHAT_MESSAGE_LENGTH = 500;
 
+// LLM requests are the most compute-expensive thing this server does (they
+// contend for the single Ollama concurrency slot) — cap them well below the
+// global default so one user spamming hints/chat can't starve everyone else.
+const LLM_RATE_LIMIT = { max: 20, timeWindow: '1 minute' };
+
 export function registerLlmRoutes(app: FastifyInstance): void {
   app.post<{ Body: HintRequestBody }>(
     '/api/llm/hint',
-    { preHandler: requireAuth },
+    { preHandler: requireAuth, config: { rateLimit: LLM_RATE_LIMIT } },
     async (request, reply) => {
       const track = await getPythonBasicsTrack();
       if (track.id !== request.body.trackId) {
@@ -64,7 +69,7 @@ export function registerLlmRoutes(app: FastifyInstance): void {
 
   app.post<{ Body: ChatRequestBody }>(
     '/api/llm/chat',
-    { preHandler: requireAuth },
+    { preHandler: requireAuth, config: { rateLimit: LLM_RATE_LIMIT } },
     async (request, reply) => {
       const message = request.body.message?.trim();
       if (!message) {

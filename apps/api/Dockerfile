@@ -14,6 +14,10 @@ FROM base AS runtime
 COPY --from=deps /repo /repo
 COPY . .
 WORKDIR /repo/apps/api
+# node:20-slim already includes an unprivileged "node" user (uid 1000).
+# esbuild writes dist/ here at container start, so it needs to be writable.
+RUN chown -R node:node /repo
+USER node
 EXPOSE 8081
 HEALTHCHECK --interval=30s --timeout=3s CMD node -e "fetch('http://127.0.0.1:8081/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 CMD ["pnpm", "start"]

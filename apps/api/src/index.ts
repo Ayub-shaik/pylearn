@@ -1,4 +1,5 @@
 import cookie from '@fastify/cookie';
+import rateLimit from '@fastify/rate-limit';
 import Fastify from 'fastify';
 
 import { registerAuthRoutes } from './auth/google';
@@ -14,6 +15,8 @@ import { registerTrackRoutes } from './routes/tracks.routes';
 const app = Fastify({ logger: true });
 
 await app.register(cookie, { secret: config.sessionSecret });
+// Global default; individual routes (auth, llm) set stricter limits below.
+await app.register(rateLimit, { max: 120, timeWindow: '1 minute' });
 
 app.get('/api/health', async () => ({ status: 'ok' }));
 
