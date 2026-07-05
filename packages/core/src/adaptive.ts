@@ -1,20 +1,17 @@
-import { CheckpointRef, EngineContext, SessionState } from './types';
+import type { CheckpointRef, SessionState, Track } from './types';
 
 export interface AdaptiveContext {
-  /** Shared engine context containing curriculum and mastery state */
-  engine: EngineContext;
+  /** Track data used by the adaptive policy. */
+  track: Track;
   /** Active session metadata already persisted */
   session: SessionState;
 }
 
 /**
- * Select the next checkpoint reference based on the adaptive strategy.
- * @param context Aggregated engine and session state.
- * @returns Reference to the next checkpoint to deliver.
- * @todo TODO(impl): Replace placeholder with adaptive selection strategy.
+ * Placeholder adaptive selector that currently defers to sequential ordering.
+ * @todo TODO(impl): Incorporate mastery signals and attempt history.
  */
-export function selectNextCheckpoint(context: AdaptiveContext): CheckpointRef {
-  // TODO(impl): Evaluate mastery and recent attempts to pick the next checkpoint.
+export function selectAdaptiveCheckpoint(context: AdaptiveContext): CheckpointRef {
   void context;
   return {
     lessonId: '',

@@ -1,6 +1,7 @@
 export type CheckpointType = 'note' | 'quiz-mcq' | 'fill-blank' | 'code-cell';
 
 export type HintLevel = 'H0' | 'H1' | 'H2';
+export type HintStage = HintLevel | 'REVEAL';
 
 export interface CheckpointBase<TType extends CheckpointType> {
   /** Stable identifier that matches lesson data */
@@ -12,7 +13,7 @@ export interface CheckpointBase<TType extends CheckpointType> {
   /** Instructional content or prompt body */
   content: string;
   /** Hint copy keyed by hint level */
-  hints: Record<HintLevel, string>;
+  hints?: Record<HintLevel, string>;
 }
 
 export interface NoteCheckpoint extends CheckpointBase<'note'> {
@@ -25,6 +26,8 @@ export interface QuizOption {
   text: string;
   isCorrect: boolean;
   explanation: string;
+  whyRight?: string;
+  whyWrong?: string;
 }
 
 export interface QuizCheckpoint extends CheckpointBase<'quiz-mcq'> {
@@ -59,6 +62,7 @@ export interface Lesson {
   moduleId: string;
   title: string;
   summary: string;
+  description?: string;
   durationMinutes: number;
   checkpoints: Checkpoint[];
 }
@@ -68,6 +72,7 @@ export interface Module {
   trackId: string;
   title: string;
   summary: string;
+  description?: string;
   lessons: Lesson[];
 }
 
@@ -75,6 +80,7 @@ export interface Track {
   id: string;
   title: string;
   summary: string;
+  description?: string;
   modules: Module[];
 }
 
@@ -83,14 +89,18 @@ export interface Attempt {
   checkpointId: string;
   /** Identifier of the lesson that owns the checkpoint */
   lessonId: string;
+  /** Selected option identifier when applicable */
+  selectedOptionId?: string;
+  /** Freeform response value for text/code checkpoints */
+  responseText?: string;
   /** UTC timestamp recorded for the submission */
   timestamp: number;
   /** Whether the learner produced a correct response */
   isCorrect: boolean;
   /** Number of hints revealed before answering */
   revealsUsed: number;
-  /** Optional hint level the learner reached */
-  lastHintLevel?: HintLevel;
+  /** Highest hint stage reached before submission */
+  lastHintLevel?: HintStage;
   /** Raw score computed for the attempt */
   score?: number;
 }
@@ -120,21 +130,19 @@ export interface CheckpointRef {
   checkpointId: string;
 }
 
-export interface CurriculumData {
-  track: Track;
-  modules: Module[];
-  lessons: Lesson[];
-}
-
-export interface EngineContext {
-  curriculum: CurriculumData;
-  mastery: Mastery;
+export interface SubmissionFeedback {
+  correct: boolean;
+  rationale: string;
+  next?: CheckpointRef;
 }
 
 export interface SessionState {
   id: string;
+  trackId: string;
   attempts: Attempt[];
   mastery: Mastery;
   startedAt: number;
+  currentLessonId?: string;
+  currentCheckpointId?: string;
   completedAt?: number;
 }

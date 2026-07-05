@@ -1,39 +1,220 @@
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import type { ReactElement, ReactNode } from 'react';
-import { createContext, useContext, useMemo, useState } from 'react';
+
+import { loadSessionState, saveSessionState } from '../lib/db';
+
+import {
+  type Attempt,
+  type Checkpoint,
+  type CheckpointRef,
+  type HintStage,
+  type Lesson,
+  type SessionState,
+  type SessionSummary,
+  type SubmissionFeedback,
+  type SubmissionOutcome,
+  type Track,
+  getSummary,
+  selectNextCheckpoint,
+  startSession,
+  submitAnswer,
+} from '@pylearn/core';
+import lessonVariablesJson from '@pylearn/data/content/python-basics/lesson-001-variables.json';
+import lessonTypesJson from '@pylearn/data/content/python-basics/lesson-002-types.json';
+import moduleIntroJson from '@pylearn/data/content/python-basics/module-intro.json';
+import trackJson from '@pylearn/data/content/python-basics/track.json';
 
 export interface AppState {
-  readonly activeTrackId?: string;
-  readonly activeLessonId?: string;
+  readonly track?: Track;
+  readonly session?: SessionState;
+  readonly currentLesson?: Lesson;
+  readonly currentCheckpoint?: Checkpoint;
+  readonly summary?: SessionSummary;
+  readonly attempts: Attempt[];
+  readonly loading: boolean;
+  readonly error?: string;
+}
+
+export interface SubmitAttemptPayload {
+  lessonId: string;
+  checkpointId: string;
+  isCorrect: boolean;
+  revealsUsed?: number;
+  lastHintLevel?: HintStage | null;
+  selectedOptionId?: string;
+  responseText?: string;
 }
 
 export interface AppActions {
-  setActiveTrack: (_trackId?: string) => void;
-  setActiveLesson: (_lessonId?: string) => void;
+  setActiveLesson: (_lessonId: string) => void;
+  submitAttempt: (_payload: SubmitAttemptPayload) => SubmissionFeedback | undefined;
 }
 
 export interface AppStore extends AppState, AppActions {}
 
+interface InternalState {
+  track?: Track;
+  session?: SessionState;
+  loading: boolean;
+  error?: string;
+}
+
 const AppStoreContext = createContext<AppStore | undefined>(undefined);
 
-const initialState: AppState = {
-  activeTrackId: undefined,
-  activeLessonId: undefined,
-};
-
-/**
- * Provide a minimal application store until the real state engine lands.
- * @todo TODO(impl): Replace with data-driven store (e.g., Zustand/Redux).
- */
 export function AppStoreProvider({ children }: { children: ReactNode }): ReactElement {
-  const [state, setState] = useState(initialState);
+  const [internal, setInternal] = useState<InternalState>({ loading: true });
+
+  const persistSession = useCallback((session: SessionState) => {
+    void saveSessionState(session);
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const track = buildDefaultTrack();
+        const persisted = await loadSessionState(track.id);
+        let session: SessionState;
+        if (persisted) {
+          session = persisted;
+        } else {
+          const baseSession = startSession(track);
+          const initialRef = selectNextCheckpoint(track, baseSession);
+          session = {
+            ...baseSession,
+            currentLessonId: initialRef?.lessonId,
+            currentCheckpointId: initialRef?.checkpointId,
+          };
+          persistSession(session);
+        }
+
+        if (!cancelled) {
+          setInternal({ track, session, loading: false });
+        }
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Failed to load track data';
+        if (!cancelled) {
+          setInternal({ loading: false, error: message });
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [persistSession]);
+
+  const setActiveLesson = useCallback(
+    (lessonId: string) => {
+      let nextSession: SessionState | undefined;
+      setInternal((prev) => {
+        if (!prev.track || !prev.session) return prev;
+        const lesson = findLesson(prev.track, lessonId);
+        if (!lesson) return prev;
+        const nextCheckpoint = findFirstUnattemptedInLesson(prev.track, prev.session, lessonId);
+        const fallbackCheckpoint = lesson.checkpoints[0]?.id;
+        nextSession = {
+          ...prev.session,
+          currentLessonId: lessonId,
+          currentCheckpointId: nextCheckpoint?.checkpointId ?? fallbackCheckpoint,
+        };
+        return {
+          ...prev,
+          session: nextSession,
+        };
+      });
+
+      if (nextSession) {
+        persistSession(nextSession);
+      }
+    },
+    [persistSession],
+  );
+
+  const submitAttempt = useCallback(
+    (payload: SubmitAttemptPayload): SubmissionFeedback | undefined => {
+      let outcome: SubmissionOutcome | undefined;
+      setInternal((prev) => {
+        if (!prev.track || !prev.session) return prev;
+        const attempt: Attempt = {
+          checkpointId: payload.checkpointId,
+          lessonId: payload.lessonId,
+          selectedOptionId: payload.selectedOptionId,
+          responseText: payload.responseText,
+          isCorrect: payload.isCorrect,
+          revealsUsed: payload.revealsUsed ?? 0,
+          lastHintLevel: payload.lastHintLevel ?? undefined,
+          timestamp: Date.now(),
+        };
+
+        outcome = submitAnswer(prev.track, prev.session, attempt);
+        if (!outcome) return prev;
+
+        if (!outcome) return prev;
+
+        const preservedSession: SessionState = {
+          ...outcome.session,
+          currentLessonId: payload.lessonId,
+          currentCheckpointId: payload.checkpointId,
+        };
+
+        outcome.session = preservedSession;
+
+        return {
+          ...prev,
+          session: preservedSession,
+        };
+      });
+
+      if (outcome) {
+        persistSession(outcome.session);
+        return outcome.feedback;
+      }
+
+      return undefined;
+    },
+    [persistSession],
+  );
+
+  const track = internal.track;
+  const session = internal.session;
+  const attempts = session?.attempts ?? [];
+  const currentLesson =
+    track && session?.currentLessonId ? findLesson(track, session.currentLessonId) : undefined;
+  const currentCheckpoint =
+    currentLesson && session?.currentCheckpointId
+      ? currentLesson.checkpoints.find(
+          (checkpoint) => checkpoint.id === session.currentCheckpointId,
+        )
+      : undefined;
+  const summary = track && session ? getSummary(track, session) : undefined;
 
   const value = useMemo<AppStore>(
     () => ({
-      ...state,
-      setActiveTrack: (_trackId) => setState((prev) => ({ ...prev, activeTrackId: _trackId })),
-      setActiveLesson: (_lessonId) => setState((prev) => ({ ...prev, activeLessonId: _lessonId })),
+      track,
+      session,
+      currentLesson,
+      currentCheckpoint,
+      summary,
+      attempts,
+      loading: internal.loading,
+      error: internal.error,
+      setActiveLesson,
+      submitAttempt,
     }),
-    [state],
+    [
+      attempts,
+      currentCheckpoint,
+      currentLesson,
+      internal.error,
+      internal.loading,
+      session,
+      setActiveLesson,
+      submitAttempt,
+      summary,
+      track,
+    ],
   );
 
   return <AppStoreContext.Provider value={value}>{children}</AppStoreContext.Provider>;
@@ -45,4 +226,60 @@ export function useAppStore(): AppStore {
     throw new Error('useAppStore must be used within AppStoreProvider');
   }
   return context;
+}
+
+function buildDefaultTrack(): Track {
+  const lessonMap = new Map<string, Lesson>([
+    ['./lesson-001-variables.json', lessonVariablesJson as Lesson],
+    ['./lesson-002-types.json', lessonTypesJson as Lesson],
+  ]);
+
+  type LessonReference = { path: string };
+  const lessonRefs = moduleIntroJson.lessons as LessonReference[];
+  const moduleLessons = lessonRefs.map((entry: LessonReference) => {
+    const lesson = lessonMap.get(entry.path);
+    if (!lesson) {
+      throw new Error(`Missing lesson content for path ${entry.path}`);
+    }
+    return lesson;
+  });
+
+  const moduleIntro = {
+    id: moduleIntroJson.id,
+    trackId: moduleIntroJson.trackId,
+    title: moduleIntroJson.title,
+    summary: moduleIntroJson.summary,
+    description: moduleIntroJson.description,
+    lessons: moduleLessons,
+  } satisfies Track['modules'][number];
+
+  return {
+    id: trackJson.id,
+    title: trackJson.title,
+    summary: trackJson.summary,
+    description: trackJson.description,
+    modules: [moduleIntro],
+  };
+}
+
+function findLesson(track: Track, lessonId: string): Lesson | undefined {
+  for (const module of track.modules) {
+    const lesson = module.lessons.find((candidate: Lesson) => candidate.id === lessonId);
+    if (lesson) return lesson;
+  }
+  return undefined;
+}
+
+function findFirstUnattemptedInLesson(
+  track: Track,
+  session: SessionState,
+  lessonId: string,
+): CheckpointRef | undefined {
+  const lesson = findLesson(track, lessonId);
+  if (!lesson) return undefined;
+  const attemptedIds = new Set(session.attempts.map((attempt: Attempt) => attempt.checkpointId));
+  const checkpoint = lesson.checkpoints.find(
+    (candidate: Checkpoint) => !attemptedIds.has(candidate.id),
+  );
+  return checkpoint ? ({ lessonId, checkpointId: checkpoint.id } as CheckpointRef) : undefined;
 }

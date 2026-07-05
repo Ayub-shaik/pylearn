@@ -35,7 +35,15 @@ export default [
       // import hygiene
       'import/order': [
         'warn',
-        { 'newlines-between': 'always', alphabetize: { order: 'asc', caseInsensitive: true } },
+        {
+          'newlines-between': 'always',
+          alphabetize: { order: 'asc', caseInsensitive: true },
+          pathGroups: [
+            { pattern: '@pylearn/**', group: 'internal', position: 'before' },
+            { pattern: '@web/**', group: 'internal', position: 'before' },
+          ],
+          pathGroupsExcludedImportTypes: ['builtin'],
+        },
       ],
       'no-unused-vars': [
         'error',

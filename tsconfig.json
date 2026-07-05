@@ -9,7 +9,20 @@
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "jsx": "react-jsx",
-    "types": ["node"]
+    "types": ["node"],
+    "baseUrl": ".",
+    "paths": {
+      "@pylearn/core": ["packages/core/src"],
+      "@pylearn/core/*": ["packages/core/src/*"],
+      "@pylearn/data": ["packages/data"],
+      "@pylearn/data/*": ["packages/data/*"],
+      "@pylearn/llm": ["packages/llm/src"],
+      "@pylearn/llm/*": ["packages/llm/src/*"],
+      "@pylearn/ui-kit": ["packages/ui-kit/src"],
+      "@pylearn/ui-kit/*": ["packages/ui-kit/src/*"],
+      "@web/pyodide": ["apps/web/src/lib/pyodide/loader.ts"],
+      "@web/pyodide/*": ["apps/web/src/lib/pyodide/*"]
+    }
   },
   "include": ["apps", "packages", "scripts", "docs"]
 }

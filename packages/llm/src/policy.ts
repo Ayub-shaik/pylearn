@@ -10,9 +10,19 @@ export interface ProviderEnvironment {
  * @todo TODO(impl): Incorporate environment signals and cached probe results.
  */
 export function selectProvider(env: ProviderEnvironment, userSetting?: LLMProvider): LLMProvider {
-  // TODO(impl): Respect user setting and live probes; default to browser fallback.
-  void env;
-  return userSetting ?? 'browser';
+  if (userSetting === 'browser') {
+    return 'browser';
+  }
+
+  if (userSetting === 'ollama') {
+    return env.ollamaReachable ? 'ollama' : 'browser';
+  }
+
+  if (env.ollamaReachable) {
+    return 'ollama';
+  }
+
+  return 'browser';
 }
 
 export type ModelTask = 'explain' | 'code_hint';

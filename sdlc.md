@@ -20,48 +20,47 @@ Checklists
 
 P0.1 Repo Hygiene & Conventions
 
-[] Adopt commit style: Conventional Commits (doc in /docs/contrib.md).
+[x] Adopt commit style: Conventional Commits (doc in /docs/contrib.md).
 
-[] Define branching: main (protected), feat/*, fix/*, chore/*.
+[x] Define branching: main (protected), feat/_, fix/_, chore/\*.
 
 [] Add issue labels (list above).
 
-[] Add PR template (.github/pull_request_template.md).
+[x] Add PR template (.github/pull_request_template.md).
 
-[] Add Issue templates: Feature, Bug, Content, Task.
+[x] Add Issue templates: Feature, Bug, Content, Task.
 
 P0.2 Tooling
 
-[] Choose package manager: pnpm workspaces.
+[x] Choose package manager: pnpm workspaces.
 
-[] Root package.json with workspaces.
+[x] Root package.json with workspaces.
 
-[] Add Prettier + ESLint configs.
+[x] Add Prettier + ESLint configs.
 
-[] Husky + lint-staged pre-commit hook (lint, typecheck).
+[x] Husky + lint-staged pre-commit hook (lint, typecheck).
 
 [] Basic CI: Node setup, pnpm i, pnpm -w build, pnpm -w test.
 
 P0.3 Monorepo Layout (no code yet—folders only)
 
 pylearn/
-  apps/
-    web/
-    android/
-  packages/
-    core/
-    ui-kit/
-    llm/
-    speech/
-    data/
-  docs/
-  infra/
-  scripts/
+apps/
+web/
+android/
+packages/
+core/
+ui-kit/
+llm/
+speech/
+data/
+docs/
+infra/
+scripts/
 
+[x] Create directories + placeholder README.md in each.
 
-[] Create directories + placeholder README.md in each.
-
-[] Add CODEOWNERS scoped by folder.
+[x] Add CODEOWNERS scoped by folder.
 
 Acceptance Tests
 
@@ -81,13 +80,13 @@ P1.1 Curriculum Definition
 
 [] Define topic map: Variables, Types, I/O, Control Flow, Functions, Lists, Dicts, Loops, Errors, Modules.
 
-[] Author Curriculum JSON Schema (lesson → checkpoints).
+[x] Author Curriculum JSON Schema (lesson → checkpoints).
 
-[] Content lint rules (IDs stable, unique; length bounds; hint presence).
+[x] Content lint rules (IDs stable, unique; length bounds; hint presence).
 
 [] Draft 10+ lessons (skeleton only, no final copy).
 
-[] Define checkpoint types: note, quiz-mcq, fill-blank, code-cell.
+[x] Define checkpoint types: note, quiz-mcq, fill-blank, code-cell.
 
 P1.2 UX Flows & Copy
 
@@ -129,25 +128,27 @@ P2.1 packages/core (Engines)
 
 [] Adaptive policy: choose next checkpoint by mastery & recent mistakes.
 
-[] Hint policy state machine (H0 → H1 → H2 → Reveal).
+[x] Hint policy state machine (H0 → H1 → H2 → Reveal). (implemented hint cycling, rationale, and scoring penalties)
 
 [] Result types & telemetry interfaces (local only).
 
 P2.2 packages/ui-kit (Components)
 
-[] LessonCard, QuizMCQ, FillBlank, CodeCell (sandboxed), HintPanel, ResultExplainer, ProgressBar, StreakChip.
+[x] LessonCard, QuizMCQ, FillBlank, CodeCell (sandboxed), HintPanel, ResultExplainer, ProgressBar, StreakChip.
 
-[] Minimal theme tokens (font sizes, spacing, elevation).
+[x] Minimal theme tokens (font sizes, spacing, elevation).
+
+[x] PWA manifest + offline shell caching.
 
 [] Keyboard-first interactions & focus rings.
 
 P2.3 packages/data (Content Store)
 
-[] Directory structure per track/module/lesson.
+[x] Directory structure per track/module/lesson.
 
-[] Content validator CLI (pnpm data:lint).
+[x] Content validator CLI (pnpm data:lint).
 
-[] Sample “Python Basics” lessons with placeholder content.
+[x] Sample “Python Basics” lessons with placeholder content.
 
 P2.4 QA
 
@@ -180,7 +181,7 @@ Browser default pack: qwen2.5-instruct-1.5b (upgrade to 3B).
 
 Ollama policy: explain=llama3.1:8b | deepseek-r1:7b, code_hint=qwen2.5-coder:7b.
 
-[] Settings UI: Toggle “Use local Ollama if available”, model dropdown (persisted).
+[~] Settings UI: Toggle “Use local Ollama if available”, model dropdown (persisted).
 
 [] Embeddings: Prefer pre-embedded lesson bank; if Ollama present and user enabled, allow local nomic-embed-text for custom material.
 
@@ -430,15 +431,17 @@ Title: [Feature] <short>
 Labels: type:feat, area:<core|ui|...>, phase:X, prio:P2
 
 Goal
+
 - <what user gets>
 
 Acceptance Criteria
+
 - <checks>
 
 Notes
+
 - Dependencies:
 - Risks:
-
 
 Content
 
@@ -446,6 +449,7 @@ Title: [Content] Lesson <id>: <name>
 Labels: type:docs, area:content, phase:1, prio:P2
 
 Tasks
+
 - [] Draft checkpoints
 - [] Write hints H0/H1/H2
 - [] Option rationales (right/wrong)

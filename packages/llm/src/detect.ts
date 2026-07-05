@@ -9,8 +9,25 @@ export async function probeOllama(
   baseUrl = 'http://localhost:11434',
   timeoutMs = 200,
 ): Promise<boolean> {
-  // TODO(impl): Replace stub with real fetch and timeout handling.
-  void baseUrl;
-  void timeoutMs;
-  return false;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const response = await fetch(normaliseBase(baseUrl), {
+      method: 'GET',
+      signal: controller.signal,
+      headers: { Accept: 'application/json' },
+    });
+    return response.ok;
+  } catch (error) {
+    void error;
+    return false;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+function normaliseBase(baseUrl: string): string {
+  const trimmed = baseUrl.replace(/\/$/, '');
+  return `${trimmed}/api/tags`;
 }

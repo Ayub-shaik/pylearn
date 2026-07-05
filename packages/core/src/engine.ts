@@ -1,122 +1,173 @@
+import { scoreAttempt } from './scoring';
 import {
   Attempt,
-  CheckpointRef,
-  CurriculumData,
-  EngineContext,
-  HintLevel,
-  Lesson,
   Checkpoint,
+  CheckpointRef,
+  Lesson,
   Mastery,
-  Module,
   SessionState,
   SessionSummary,
+  SubmissionFeedback,
   Track,
 } from './types';
 
-const DEFAULT_MASTERY: Mastery = {
-  overallPercent: 0,
-  lessonPercent: {},
-  updatedAt: Date.now(),
-};
+const DEFAULT_OVERALL_MASTERY = 0;
 
-/**
- * Load curriculum data and initialise the engine context.
- * @param track Top-level track definition.
- * @param modules Modules associated with the track.
- * @param lessons Full lesson objects grouped under the modules.
- * @returns Engine context that can be shared across sessions.
- * @todo TODO(impl): Replace placeholder aggregation with real loaders.
- */
-export function loadCurriculum(track: Track, modules: Module[], lessons: Lesson[]): EngineContext {
-  // TODO(impl): Parse JSON content and precompute lookups.
-  const curriculum: CurriculumData = { track, modules, lessons };
-  return {
-    curriculum,
-    mastery: { ...DEFAULT_MASTERY },
-  };
+export interface SubmissionOutcome {
+  session: SessionState;
+  feedback: SubmissionFeedback;
 }
 
-/**
- * Start a new learner session against the provided engine context.
- * @param context Engine context returned by loadCurriculum.
- * @returns New session state ready to accept attempts.
- * @todo TODO(impl): Persist and hydrate prior mastery/attempt history.
- */
-export function startSession(context: EngineContext): SessionState {
-  // TODO(impl): Attach learner identity and restore persisted mastery.
-  return {
+export function startSession(track: Track): SessionState {
+  const baseMastery: Mastery = {
+    overallPercent: DEFAULT_OVERALL_MASTERY,
+    lessonPercent: buildLessonPercentMap(track),
+    updatedAt: Date.now(),
+  };
+
+  const emptySession: SessionState = {
     id: `session-${Date.now()}`,
+    trackId: track.id,
     attempts: [],
-    mastery: { ...context.mastery },
+    mastery: baseMastery,
     startedAt: Date.now(),
   };
+
+  const firstRef = selectNextCheckpoint(track, emptySession);
+  return {
+    ...emptySession,
+    currentLessonId: firstRef?.lessonId,
+    currentCheckpointId: firstRef?.checkpointId,
+  };
 }
 
-/**
- * Submit an attempt and produce an updated session state.
- * @param context Shared engine context (mutable state lives in session).
- * @param session Current session state.
- * @param attempt Attempt metadata to record.
- * @returns Updated session state including the recorded attempt.
- * @todo TODO(impl): Apply scoring, mastery updates, and branching logic.
- */
+export function selectNextCheckpoint(
+  track: Track,
+  session: SessionState,
+): CheckpointRef | undefined {
+  const attempted = new Set(session.attempts.map((attempt) => attempt.checkpointId));
+  return flattenCheckpoints(track).find((ref) => !attempted.has(ref.checkpointId));
+}
+
 export function submitAnswer(
-  context: EngineContext,
+  track: Track,
   session: SessionState,
   attempt: Attempt,
-): SessionState {
-  // TODO(impl): Integrate scoring and mastery once implemented.
-  void context;
-  return {
+): SubmissionOutcome {
+  const checkpoint = resolveCheckpoint(track, {
+    lessonId: attempt.lessonId,
+    checkpointId: attempt.checkpointId,
+  });
+
+  const evaluation = evaluateAttempt(checkpoint, attempt);
+  const recordedAttempt: Attempt = {
+    ...attempt,
+    timestamp: attempt.timestamp ?? Date.now(),
+    isCorrect: evaluation.correct,
+    revealsUsed: attempt.revealsUsed ?? 0,
+    lastHintLevel: attempt.lastHintLevel,
+  };
+  recordedAttempt.score = scoreAttempt(recordedAttempt);
+
+  const updatedAttempts = [...session.attempts, recordedAttempt];
+  const updatedMastery: Mastery = {
+    ...session.mastery,
+    updatedAt: Date.now(),
+  };
+
+  const updatedSession: SessionState = {
     ...session,
-    attempts: [...session.attempts, attempt],
-    mastery: { ...session.mastery },
+    attempts: updatedAttempts,
+    mastery: updatedMastery,
+  };
+
+  const nextRef = selectNextCheckpoint(track, updatedSession);
+  const sessionWithCursor: SessionState = {
+    ...updatedSession,
+    currentLessonId: nextRef?.lessonId ?? updatedSession.currentLessonId,
+    currentCheckpointId: nextRef?.checkpointId,
+    completedAt: nextRef ? updatedSession.completedAt : (updatedSession.completedAt ?? Date.now()),
+  };
+
+  return {
+    session: sessionWithCursor,
+    feedback: {
+      correct: evaluation.correct,
+      rationale: evaluation.rationale,
+      next: nextRef,
+    },
   };
 }
 
-/**
- * Retrieve hint content for a checkpoint at the requested hint level.
- * @param ref Reference to the checkpoint within the curriculum.
- * @param level Hint level being requested (H0/H1/H2).
- * @param context Engine context hosting the curriculum content.
- * @returns Hint copy, or empty string if unavailable.
- * @todo TODO(impl): Add guardrails and analytics for hint usage.
- */
-export function getHint(ref: CheckpointRef, level: HintLevel, context: EngineContext): string {
-  // TODO(impl): Lookup checkpoint content safely and localise if required.
-  void ref;
-  void level;
-  void context;
-  return '';
-}
-
-/**
- * Produce a session summary for display to the learner.
- * @param session Session state with attempts collected so far.
- * @returns Summary object containing attempts, score, and mastery snapshot.
- * @todo TODO(impl): Include achievements, streaks, and qualitative feedback.
- */
-export function getSummary(session: SessionState): SessionSummary {
-  // TODO(impl): Calculate total score and narrative summary once scoring exists.
+export function getSummary(track: Track, session: SessionState): SessionSummary {
+  void track;
+  const totalScore = session.attempts.reduce((sum, attempt) => sum + (attempt.score ?? 0), 0);
   return {
     attempts: session.attempts,
-    totalScore: 0,
-    mastery: { ...session.mastery },
+    totalScore,
+    mastery: session.mastery,
   };
 }
 
-/**
- * Convenience helper to locate checkpoint metadata within the curriculum.
- * @param context Engine context used to traverse lessons.
- * @param ref Reference pointing to the desired checkpoint.
- * @returns Resolved checkpoint or undefined.
- * @todo TODO(impl): Optimise lookups with hashed indices.
- */
-export function resolveCheckpoint(
-  context: EngineContext,
-  ref: CheckpointRef,
-): Checkpoint | undefined {
-  // TODO(impl): Build fast lookup maps during curriculum load.
-  const lesson = context.curriculum.lessons.find((candidate) => candidate.id === ref.lessonId);
+export function resolveCheckpoint(track: Track, ref: CheckpointRef): Checkpoint | undefined {
+  const lesson = findLesson(track, ref.lessonId);
   return lesson?.checkpoints.find((checkpoint) => checkpoint.id === ref.checkpointId);
+}
+
+function evaluateAttempt(checkpoint: Checkpoint | undefined, attempt: Attempt) {
+  if (!checkpoint) {
+    return {
+      correct: attempt.isCorrect,
+      rationale: 'Checkpoint content is unavailable.',
+    };
+  }
+
+  switch (checkpoint.type) {
+    case 'quiz-mcq': {
+      const option = checkpoint.options.find((item) => item.id === attempt.selectedOptionId);
+      const correct = option?.isCorrect ?? false;
+      const rationale = correct
+        ? (option?.whyRight ?? option?.explanation ?? 'No explanation provided.')
+        : (option?.whyWrong ?? option?.explanation ?? 'No explanation provided.');
+      return { correct, rationale };
+    }
+    case 'fill-blank': {
+      const expected = checkpoint.answer.trim();
+      const response = (attempt.responseText ?? '').trim();
+      const correct = response.localeCompare(expected, undefined, { sensitivity: 'accent' }) === 0;
+      return { correct, rationale: checkpoint.explanation };
+    }
+    case 'code-cell':
+    case 'note':
+    default:
+      return { correct: attempt.isCorrect, rationale: checkpoint.explanation };
+  }
+}
+
+function flattenLessons(track: Track): Lesson[] {
+  return track.modules.flatMap((module) => module.lessons);
+}
+
+function flattenCheckpoints(track: Track): CheckpointRef[] {
+  const refs: CheckpointRef[] = [];
+  for (const module of track.modules) {
+    for (const lesson of module.lessons) {
+      for (const checkpoint of lesson.checkpoints) {
+        refs.push({ lessonId: lesson.id, checkpointId: checkpoint.id });
+      }
+    }
+  }
+  return refs;
+}
+
+function findLesson(track: Track, lessonId?: string): Lesson | undefined {
+  if (!lessonId) return undefined;
+  return flattenLessons(track).find((lesson) => lesson.id === lessonId);
+}
+
+function buildLessonPercentMap(track: Track): Record<string, number> {
+  const entries = flattenLessons(track).map(
+    (lesson) => [lesson.id, DEFAULT_OVERALL_MASTERY] as const,
+  );
+  return Object.fromEntries(entries);
 }

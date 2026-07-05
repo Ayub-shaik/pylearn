@@ -18,27 +18,42 @@ const navigation = [
 
 export function App(): ReactElement {
   return (
-    <div data-app-shell>
-      <header>
-        <h1>PyLearn</h1>
-        <nav aria-label="Primary">
-          <ul>
-            {navigation.map((link) => (
-              <li key={link.to}>
-                <NavLink to={link.to}>{link.label}</NavLink>
-              </li>
-            ))}
-          </ul>
-        </nav>
+    <div className="min-h-screen bg-slate-950 text-slate-100">
+      <header className="border-b border-slate-800 bg-slate-900/80 backdrop-blur">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+          <h1 className="text-xl font-semibold tracking-tight text-white">PyLearn</h1>
+          <nav aria-label="Primary">
+            <ul className="flex items-center gap-4 text-sm font-medium text-slate-300">
+              {navigation.map((link) => (
+                <li key={link.to}>
+                  <NavLink
+                    to={link.to}
+                    className={({ isActive }) =>
+                      `rounded-md px-3 py-2 transition-colors duration-150 ${
+                        isActive
+                          ? 'bg-primary/20 text-white'
+                          : 'hover:bg-slate-800 hover:text-white'
+                      }`
+                    }
+                  >
+                    {link.label}
+                  </NavLink>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        </div>
       </header>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/tracks" element={<Tracks />} />
-        <Route path="/lesson/:lessonId" element={<Lesson />} />
-        <Route path="/review" element={<Review />} />
-        <Route path="/settings" element={<Settings />} />
-        <Route path="/about" element={<About />} />
-      </Routes>
+      <main className="mx-auto w-full max-w-5xl px-6 py-10">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/tracks" element={<Tracks />} />
+          <Route path="/lesson/:lessonId" element={<Lesson />} />
+          <Route path="/review" element={<Review />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/about" element={<About />} />
+        </Routes>
+      </main>
     </div>
   );
 }

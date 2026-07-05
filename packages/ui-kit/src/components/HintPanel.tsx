@@ -1,50 +1,98 @@
-import type { ReactElement, HTMLAttributes } from 'react';
+import type { ReactElement } from 'react';
 
-export type HintLevel = 'H0' | 'H1' | 'H2';
+type HintStage = 'H0' | 'H1' | 'H2' | 'REVEAL';
 
-export interface HintPanelProps extends Omit<HTMLAttributes<HTMLDivElement>, 'children'> {
-  checkpointId: string;
-  currentLevel: HintLevel | null;
-  availableLevels: HintLevel[];
-  isRevealed: boolean;
-  onRevealNext?: (_nextLevel: HintLevel) => void;
+export interface HintPanelProps {
+  h0?: string;
+  h1?: string;
+  h2?: string;
+  revealedAnswerText?: string;
+  level: HintStage | null;
+  onNextLevel: () => void;
+  disabled?: boolean;
 }
 
-/**
- * Show contextual hints with controls to reveal additional guidance.
- * @todo TODO(impl): Replace placeholder markup with progressive disclosure UI.
- */
+const BUTTON_LABELS: Record<HintStage, string> = {
+  H0: 'Show hint',
+  H1: 'Show another hint',
+  H2: 'Reveal answer',
+  REVEAL: 'Reveal answer',
+};
+
 export function HintPanel({
-  checkpointId,
-  currentLevel,
-  availableLevels,
-  isRevealed,
-  onRevealNext,
-  onClick,
-  'aria-live': ariaLive = 'polite',
-  'aria-label': ariaLabel,
-  ...rest
+  h0,
+  h1,
+  h2,
+  revealedAnswerText,
+  level,
+  onNextLevel,
+  disabled,
 }: HintPanelProps): ReactElement {
-  const _nextLevel = availableLevels.find((level) => level !== currentLevel);
+  const nextLabel = getNextLabel(level);
+  const displayText = getDisplayText(level, { h0, h1, h2, revealed: revealedAnswerText });
+  const showButton = level !== 'REVEAL' && !disabled;
 
   return (
-    <div
-      {...rest}
-      role="complementary"
-      data-component="HintPanel"
-      data-checkpoint-id={checkpointId}
-      data-current-hint={currentLevel ?? ''}
-      data-revealed={isRevealed}
-      aria-live={ariaLive}
-      aria-label={ariaLabel ?? 'Hint panel'}
-      onClick={(event) => {
-        onClick?.(event);
-        if (!event.defaultPrevented && _nextLevel) {
-          onRevealNext?.(_nextLevel);
-        }
+    <section
+      aria-live="polite"
+      aria-label="Hint panel"
+      style={{
+        marginTop: '1rem',
+        padding: '0.75rem',
+        border: '1px solid var(--pylearn-border, #d0d7de)',
+        borderRadius: 6,
+        background: 'var(--pylearn-hint-bg, #f1f5f9)',
       }}
     >
-      Hint level: {currentLevel ?? 'None'}
-    </div>
+      <header
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          gap: '0.75rem',
+        }}
+      >
+        <strong>Need a hint?</strong>
+        {showButton ? (
+          <button type="button" onClick={onNextLevel} disabled={disabled}>
+            {nextLabel}
+          </button>
+        ) : null}
+      </header>
+      {displayText ? <p style={{ marginTop: '0.5rem' }}>{displayText}</p> : null}
+    </section>
   );
+}
+
+function getNextLabel(level: HintStage | null): string {
+  if (!level) return BUTTON_LABELS.H0;
+  switch (level) {
+    case 'H0':
+      return BUTTON_LABELS.H1;
+    case 'H1':
+      return BUTTON_LABELS.H2;
+    case 'H2':
+      return BUTTON_LABELS.REVEAL;
+    case 'REVEAL':
+    default:
+      return BUTTON_LABELS.REVEAL;
+  }
+}
+
+function getDisplayText(
+  level: HintStage | null,
+  texts: { h0?: string; h1?: string; h2?: string; revealed?: string },
+): string | undefined {
+  switch (level) {
+    case 'H0':
+      return texts.h0;
+    case 'H1':
+      return texts.h1 ?? texts.h0;
+    case 'H2':
+      return texts.h2 ?? texts.h1 ?? texts.h0;
+    case 'REVEAL':
+      return texts.revealed ?? texts.h2 ?? texts.h1 ?? texts.h0;
+    default:
+      return undefined;
+  }
 }

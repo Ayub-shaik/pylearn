@@ -1,19 +1,17 @@
-import type { ReactElement, HTMLAttributes } from 'react';
+import type { ChangeEventHandler, FormEvent, ReactElement } from 'react';
+import { useCallback } from 'react';
 
-export interface FillBlankProps extends Omit<HTMLAttributes<HTMLDivElement>, 'children'> {
+export interface FillBlankProps {
   questionId: string;
   prompt: string;
   value: string;
   placeholder?: string;
   autoFocus?: boolean;
   disabled?: boolean;
+  onChange?: ChangeEventHandler<HTMLInputElement>;
   onSubmitAnswer?: (_payload: { questionId: string; value: string }) => void;
 }
 
-/**
- * Collect a short text response for fill-in-the-blank checkpoints.
- * @todo TODO(impl): Replace placeholder markup with interactive input UI.
- */
 export function FillBlank({
   questionId,
   prompt,
@@ -21,42 +19,45 @@ export function FillBlank({
   placeholder,
   autoFocus,
   disabled,
+  onChange,
   onSubmitAnswer,
-  onClick,
-  onKeyDown,
-  'aria-label': ariaLabel,
-  ...rest
 }: FillBlankProps): ReactElement {
-  const handleSubmit = () => {
-    if (!disabled) {
-      onSubmitAnswer?.({ questionId, value });
-    }
-  };
+  const handleSubmit = useCallback(
+    (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      if (!disabled) {
+        onSubmitAnswer?.({ questionId, value });
+      }
+    },
+    [disabled, onSubmitAnswer, questionId, value],
+  );
 
   return (
-    <div
-      {...rest}
-      role="group"
+    <form
+      onSubmit={handleSubmit}
+      className="space-y-2"
       data-component="FillBlank"
-      data-question-id={questionId}
-      data-autofocus={autoFocus ?? false}
       aria-disabled={disabled ?? false}
-      aria-label={ariaLabel ?? `Fill in the blank: ${prompt}`}
-      data-placeholder={placeholder ?? ''}
-      onClick={(event) => {
-        onClick?.(event);
-        if (!event.defaultPrevented) {
-          handleSubmit();
-        }
-      }}
-      onKeyDown={(event) => {
-        onKeyDown?.(event);
-        if (event.key === 'Enter' && !event.defaultPrevented) {
-          handleSubmit();
-        }
-      }}
     >
-      {prompt} — {value || placeholder || '...'}
-    </div>
+      <label htmlFor={questionId} className="block text-sm font-medium text-slate-300">
+        {prompt}
+      </label>
+      <input
+        id={questionId}
+        name={questionId}
+        type="text"
+        value={value}
+        placeholder={placeholder}
+        autoFocus={autoFocus}
+        disabled={disabled}
+        onChange={onChange}
+        className="w-full rounded-md border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary"
+      />
+      <div className="flex justify-end">
+        <button type="submit" className="btn btn-primary" disabled={disabled}>
+          Submit
+        </button>
+      </div>
+    </form>
   );
 }

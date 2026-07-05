@@ -1,0 +1,69 @@
+{
+  "kind": "lesson",
+  "id": "lesson.python.basics.types",
+  "moduleId": "module.python.basics.intro",
+  "title": "Working with Types",
+  "summary": "Compare core Python types and practice runtime inspection.",
+  "durationMinutes": 25,
+  "checkpoints": [
+    {
+      "id": "checkpoint.types.note-builtins",
+      "type": "note",
+      "title": "Built-in types",
+      "content": "Python ships common types like int, float, str, and bool for everyday programs.",
+      "explanation": "These built-ins cover most beginner workloads and are easy to inspect in the REPL.",
+      "hints": {
+        "H0": "Skim the sample describing each type in one sentence.",
+        "H1": "Look at the literal examples for each type.",
+        "H2": "Remember that every literal has an associated type."
+      }
+    },
+    {
+      "id": "checkpoint.types.quiz-typeof",
+      "type": "quiz-mcq",
+      "title": "Predict type() output",
+      "content": "What does `type(3.14)` return?",
+      "options": [
+        {
+          "id": "option.types.typeof.int",
+          "text": "<class 'int'>",
+          "isCorrect": false,
+          "explanation": "Floating-point literals use the float type."
+        },
+        {
+          "id": "option.types.typeof.float",
+          "text": "<class 'float'>",
+          "isCorrect": true,
+          "explanation": "`3.14` is parsed as a float literal."
+        },
+        {
+          "id": "option.types.typeof.str",
+          "text": "<class 'str'>",
+          "isCorrect": false,
+          "explanation": "Strings require quotes around text."
+        }
+      ],
+      "explanation": "Numbers with a decimal point default to the float type in Python.",
+      "hints": {
+        "H0": "Think about the presence of a decimal point.",
+        "H1": "Integers have no decimal; floats do.",
+        "H2": "`type(3.14)` returns `<class 'float'>`."
+      }
+    },
+    {
+      "id": "checkpoint.types.code-cast",
+      "type": "code-cell",
+      "title": "Casting input",
+      "content": "Convert a string input `raw_count` to an integer before adding 2.",
+      "starterCode": "raw_count = '5'\n# your code here\n",
+      "solution": "raw_count = '5'\ncount = int(raw_count) + 2\nprint(count)",
+      "expectedOutput": "7\n",
+      "explanation": "Use `int()` to coerce the string to a number before arithmetic.",
+      "hints": {
+        "H0": "Find the built-in that converts text digits to numbers.",
+        "H1": "Wrap the variable with `int(...)` before doing math.",
+        "H2": "`count = int(raw_count) + 2` then print it."
+      }
+    }
+  ]
+}

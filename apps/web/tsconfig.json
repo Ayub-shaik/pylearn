@@ -3,7 +3,20 @@
   "compilerOptions": {
     "composite": true,
     "jsx": "react-jsx",
-    "types": ["vite/client"]
+    "types": ["vite/client"],
+    "baseUrl": ".",
+    "paths": {
+      "@pylearn/core/*": ["../../packages/core/src/*"],
+      "@pylearn/data/*": ["../../packages/data/*"],
+      "@pylearn/data": ["../../packages/data"],
+      "@pylearn/core": ["../../packages/core/src"],
+      "@pylearn/llm/*": ["../../packages/llm/src/*"],
+      "@pylearn/llm": ["../../packages/llm/src"],
+      "@pylearn/ui-kit/*": ["../../packages/ui-kit/src/*"],
+      "@pylearn/ui-kit": ["../../packages/ui-kit/src"],
+      "@web/pyodide": ["./src/lib/pyodide/loader.ts"],
+      "@web/pyodide/*": ["./src/lib/pyodide/*"]
+    }
   },
   "include": ["src", "vite.config.ts"]
 }
