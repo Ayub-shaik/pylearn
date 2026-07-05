@@ -63,6 +63,11 @@ export function Login() {
           </div>
         ) : (
           <div className="space-y-4">
+            <p className="text-sm text-slate-400">
+              Signing in means your streak, mastery, and lesson progress follow you to your phone,
+              laptop, or any other browser. Skip it and PyLearn still works fully — progress just
+              stays on this device.
+            </p>
             {googleEnabled === false ? (
               <p className="text-sm text-amber-300">
                 Google sign-in isn&apos;t configured on this server yet. You can still use PyLearn

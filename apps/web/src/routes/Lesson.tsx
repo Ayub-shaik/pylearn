@@ -3,6 +3,7 @@ import type { ReactElement } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
 import { requestChat, requestHint } from '../lib/api';
+import { Spinner } from '../lib/Spinner';
 import { useAppStore } from '../state/store';
 
 import { advanceHintLevel, hintUsageCount } from '@pylearn/core';
@@ -264,7 +265,7 @@ export function Lesson(): ReactElement {
   if (loading) {
     return (
       <div className="grid place-items-center py-24">
-        <p className="text-slate-300">Loading lesson…</p>
+        <Spinner label="Loading lesson…" />
       </div>
     );
   }

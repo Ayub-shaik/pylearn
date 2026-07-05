@@ -1,6 +1,7 @@
 import type { ReactElement } from 'react';
 import { Link } from 'react-router-dom';
 
+import { Spinner } from '../lib/Spinner';
 import { useAppStore } from '../state/store';
 
 import { computeCurrentStreak, resolveCheckpoint } from '@pylearn/core';
@@ -13,7 +14,7 @@ export function Review(): ReactElement {
   if (loading) {
     return (
       <div className="card mx-auto max-w-3xl p-6">
-        <p className="text-sm text-slate-300">Preparing summary…</p>
+        <Spinner label="Preparing summary…" />
       </div>
     );
   }

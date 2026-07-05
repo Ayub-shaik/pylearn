@@ -2,6 +2,7 @@ import type { ReactElement } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 import { loadLocalOnboarding } from '../lib/onboarding';
+import { Spinner } from '../lib/Spinner';
 import { useAppStore } from '../state/store';
 
 import { computeCurrentStreak } from '@pylearn/core';
@@ -15,7 +16,7 @@ export function Home(): ReactElement {
   if (loading) {
     return (
       <div className="card mx-auto max-w-3xl p-6">
-        <p className="text-sm text-slate-300">Loading your progress…</p>
+        <Spinner label="Loading your progress…" />
       </div>
     );
   }
@@ -48,16 +49,70 @@ export function Home(): ReactElement {
 
   if (!hasOnboarded) {
     return (
-      <div className="card mx-auto max-w-3xl space-y-4 p-6">
-        <header className="space-y-2">
-          <h2 className="text-2xl font-semibold text-white">Welcome to PyLearn</h2>
-          <p className="text-sm text-slate-300">
-            Two quick questions get you started in the right place — takes about a minute.
+      <div className="space-y-8">
+        <div className="card mx-auto max-w-3xl space-y-5 p-8 text-center">
+          <p className="text-xs font-semibold uppercase tracking-widest text-primary-light">
+            Learn Python by doing
           </p>
-        </header>
-        <Link to="/onboarding" className="btn btn-primary w-fit">
-          Get started
-        </Link>
+          <h2 className="text-3xl font-semibold text-white sm:text-4xl">
+            Short lessons. Live code. Instant feedback.
+          </h2>
+          <p className="mx-auto max-w-xl text-sm text-slate-300 sm:text-base">
+            PyLearn teaches Python through hands-on checkpoints — multiple choice,
+            fill-in-the-blank, and code you actually run — with an AI tutor that explains why an
+            answer is right or wrong, not just what the answer is.
+          </p>
+          <div className="flex flex-wrap justify-center gap-3 pt-2">
+            <Link to="/onboarding" className="btn btn-primary">
+              Get started — takes a minute
+            </Link>
+            <Link to="/tracks" className="btn btn-secondary">
+              Browse lessons first
+            </Link>
+          </div>
+        </div>
+
+        <div className="mx-auto grid max-w-3xl gap-4 sm:grid-cols-2">
+          <FeatureCard
+            title="Practice, not just reading"
+            description="Every lesson ends in a checkpoint you actually solve — a quiz, a fill-in-the-blank, or real code you run yourself."
+          />
+          <FeatureCard
+            title="Hints that escalate, answers that explain"
+            description="Stuck? Hints get more specific step by step. Every result tells you why it's right or wrong, with examples."
+          />
+          <FeatureCard
+            title="A self-hosted AI tutor"
+            description="Ask a follow-up question in plain language, right on the checkpoint you're stuck on — powered by a small model we run ourselves, never a paid third-party API."
+          />
+          <FeatureCard
+            title="Progress that follows you"
+            description="Sign in with Google and pick up on any device. Prefer not to? Just start — progress saves to this browser."
+          />
+        </div>
+
+        <div className="card mx-auto max-w-3xl space-y-4 p-6">
+          <h3 className="text-lg font-semibold text-white">How it works</h3>
+          <ol className="space-y-3 text-sm text-slate-300">
+            <li>
+              <span className="font-medium text-white">1. Tell us where you're starting from.</span>{' '}
+              Two quick questions place you at the right lesson.
+            </li>
+            <li>
+              <span className="font-medium text-white">2. Work through a checkpoint.</span> Answer,
+              run code, or fill in the blank — no passive reading.
+            </li>
+            <li>
+              <span className="font-medium text-white">3. Get instant, specific feedback.</span>{' '}
+              Wrong answers explain why and let you try again — you're never just waved on to the
+              next question.
+            </li>
+            <li>
+              <span className="font-medium text-white">4. Ask when you're stuck.</span> Escalating
+              hints, or ask the AI tutor a direct question about exactly what you're looking at.
+            </li>
+          </ol>
+        </div>
       </div>
     );
   }
@@ -94,6 +149,15 @@ export function Home(): ReactElement {
           </p>
         </div>
       ) : null}
+    </div>
+  );
+}
+
+function FeatureCard({ title, description }: { title: string; description: string }) {
+  return (
+    <div className="card space-y-2 p-5">
+      <h3 className="text-sm font-semibold text-white">{title}</h3>
+      <p className="text-sm text-slate-400">{description}</p>
     </div>
   );
 }

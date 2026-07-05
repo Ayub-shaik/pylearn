@@ -2,6 +2,7 @@ import type { ReactElement } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { LEARNING_GOAL_OPTIONS, loadLocalOnboarding } from '../lib/onboarding';
+import { Spinner } from '../lib/Spinner';
 import { useAppStore } from '../state/store';
 
 import { computeCurrentStreak } from '@pylearn/core';
@@ -16,7 +17,7 @@ export function Tracks(): ReactElement {
   if (loading) {
     return (
       <div className="card mx-auto max-w-4xl p-6">
-        <p className="text-sm text-slate-300">Loading curriculum…</p>
+        <Spinner label="Loading curriculum…" />
       </div>
     );
   }
