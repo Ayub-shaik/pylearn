@@ -4,9 +4,11 @@ import { NavLink, Route, Routes } from 'react-router-dom';
 import { About } from './routes/About';
 import { Home } from './routes/Home';
 import { Lesson } from './routes/Lesson';
+import { Login } from './routes/Login';
 import { Review } from './routes/Review';
 import { Settings } from './routes/Settings';
 import { Tracks } from './routes/Tracks';
+import { useAppStore } from './state/store';
 
 const navigation = [
   { to: '/', label: 'Home' },
@@ -17,6 +19,8 @@ const navigation = [
 ];
 
 export function App(): ReactElement {
+  const { authStatus, user } = useAppStore();
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">
       <header className="border-b border-slate-800 bg-slate-900/80 backdrop-blur">
@@ -40,6 +44,18 @@ export function App(): ReactElement {
                   </NavLink>
                 </li>
               ))}
+              <li>
+                <NavLink
+                  to="/login"
+                  className={({ isActive }) =>
+                    `rounded-md px-3 py-2 transition-colors duration-150 ${
+                      isActive ? 'bg-primary/20 text-white' : 'hover:bg-slate-800 hover:text-white'
+                    }`
+                  }
+                >
+                  {authStatus === 'authenticated' ? (user?.displayName ?? 'Account') : 'Sign in'}
+                </NavLink>
+              </li>
             </ul>
           </nav>
         </div>
@@ -51,6 +67,7 @@ export function App(): ReactElement {
           <Route path="/lesson/:lessonId" element={<Lesson />} />
           <Route path="/review" element={<Review />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/login" element={<Login />} />
           <Route path="/about" element={<About />} />
         </Routes>
       </main>

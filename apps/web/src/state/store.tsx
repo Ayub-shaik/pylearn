@@ -1,6 +1,14 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import type { ReactElement, ReactNode } from 'react';
 
+import {
+  type AuthUser,
+  getMe,
+  googleSignInUrl,
+  getSession as getRemoteSession,
+  logout as remoteLogout,
+  submitAttemptRemote,
+} from '../lib/api';
 import { loadSessionState, saveSessionState } from '../lib/db';
 
 import {
@@ -24,6 +32,8 @@ import lessonTypesJson from '@pylearn/data/content/python-basics/lesson-002-type
 import moduleIntroJson from '@pylearn/data/content/python-basics/module-intro.json';
 import trackJson from '@pylearn/data/content/python-basics/track.json';
 
+export type AuthStatus = 'loading' | 'anonymous' | 'authenticated';
+
 export interface AppState {
   readonly track?: Track;
   readonly session?: SessionState;
@@ -33,6 +43,8 @@ export interface AppState {
   readonly attempts: Attempt[];
   readonly loading: boolean;
   readonly error?: string;
+  readonly authStatus: AuthStatus;
+  readonly user?: AuthUser;
 }
 
 export interface SubmitAttemptPayload {
@@ -47,7 +59,9 @@ export interface SubmitAttemptPayload {
 
 export interface AppActions {
   setActiveLesson: (_lessonId: string) => void;
-  submitAttempt: (_payload: SubmitAttemptPayload) => SubmissionFeedback | undefined;
+  submitAttempt: (_payload: SubmitAttemptPayload) => Promise<SubmissionFeedback | undefined>;
+  signIn: () => void;
+  signOut: () => Promise<void>;
 }
 
 export interface AppStore extends AppState, AppActions {}
@@ -57,12 +71,17 @@ interface InternalState {
   session?: SessionState;
   loading: boolean;
   error?: string;
+  authStatus: AuthStatus;
+  user?: AuthUser;
 }
 
 const AppStoreContext = createContext<AppStore | undefined>(undefined);
 
 export function AppStoreProvider({ children }: { children: ReactNode }): ReactElement {
-  const [internal, setInternal] = useState<InternalState>({ loading: true });
+  const [internal, setInternal] = useState<InternalState>({
+    loading: true,
+    authStatus: 'loading',
+  });
 
   const persistSession = useCallback((session: SessionState) => {
     void saveSessionState(session);
@@ -74,6 +93,22 @@ export function AppStoreProvider({ children }: { children: ReactNode }): ReactEl
     (async () => {
       try {
         const track = buildDefaultTrack();
+        const me = await getMe().catch(() => ({ authenticated: false as const }));
+
+        if (me.authenticated) {
+          const remote = await getRemoteSession(track.id);
+          if (!cancelled) {
+            setInternal({
+              track,
+              session: remote.session,
+              loading: false,
+              authStatus: 'authenticated',
+              user: me.user,
+            });
+          }
+          return;
+        }
+
         const persisted = await loadSessionState(track.id);
         let session: SessionState;
         if (persisted) {
@@ -90,12 +125,12 @@ export function AppStoreProvider({ children }: { children: ReactNode }): ReactEl
         }
 
         if (!cancelled) {
-          setInternal({ track, session, loading: false });
+          setInternal({ track, session, loading: false, authStatus: 'anonymous' });
         }
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Failed to load track data';
         if (!cancelled) {
-          setInternal({ loading: false, error: message });
+          setInternal({ loading: false, error: message, authStatus: 'anonymous' });
         }
       }
     })();
@@ -104,6 +139,15 @@ export function AppStoreProvider({ children }: { children: ReactNode }): ReactEl
       cancelled = true;
     };
   }, [persistSession]);
+
+  const signIn = useCallback(() => {
+    window.location.href = googleSignInUrl();
+  }, []);
+
+  const signOut = useCallback(async () => {
+    await remoteLogout().catch(() => undefined);
+    window.location.reload();
+  }, []);
 
   const setActiveLesson = useCallback(
     (lessonId: string) => {
@@ -133,7 +177,21 @@ export function AppStoreProvider({ children }: { children: ReactNode }): ReactEl
   );
 
   const submitAttempt = useCallback(
-    (payload: SubmitAttemptPayload): SubmissionFeedback | undefined => {
+    async (payload: SubmitAttemptPayload): Promise<SubmissionFeedback | undefined> => {
+      if (internal.authStatus === 'authenticated' && internal.track) {
+        const response = await submitAttemptRemote({
+          trackId: internal.track.id,
+          lessonId: payload.lessonId,
+          checkpointId: payload.checkpointId,
+          selectedOptionId: payload.selectedOptionId,
+          responseText: payload.responseText,
+          revealsUsed: payload.revealsUsed,
+          lastHintLevel: payload.lastHintLevel ?? undefined,
+        });
+        setInternal((prev) => ({ ...prev, session: response.session }));
+        return response.feedback;
+      }
+
       let outcome: SubmissionOutcome | undefined;
       setInternal((prev) => {
         if (!prev.track || !prev.session) return prev;
@@ -149,8 +207,6 @@ export function AppStoreProvider({ children }: { children: ReactNode }): ReactEl
         };
 
         outcome = submitAnswer(prev.track, prev.session, attempt);
-        if (!outcome) return prev;
-
         if (!outcome) return prev;
 
         const preservedSession: SessionState = {
@@ -174,7 +230,7 @@ export function AppStoreProvider({ children }: { children: ReactNode }): ReactEl
 
       return undefined;
     },
-    [persistSession],
+    [persistSession, internal.authStatus, internal.track],
   );
 
   const track = internal.track;
@@ -200,8 +256,12 @@ export function AppStoreProvider({ children }: { children: ReactNode }): ReactEl
       attempts,
       loading: internal.loading,
       error: internal.error,
+      authStatus: internal.authStatus,
+      user: internal.user,
       setActiveLesson,
       submitAttempt,
+      signIn,
+      signOut,
     }),
     [
       attempts,
@@ -209,9 +269,13 @@ export function AppStoreProvider({ children }: { children: ReactNode }): ReactEl
       currentLesson,
       internal.error,
       internal.loading,
+      internal.authStatus,
+      internal.user,
       session,
       setActiveLesson,
       submitAttempt,
+      signIn,
+      signOut,
       summary,
       track,
     ],

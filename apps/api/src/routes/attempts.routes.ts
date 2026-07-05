@@ -51,7 +51,7 @@ export function registerAttemptRoutes(app: FastifyInstance): void {
       await recordAttempt(session.id, recorded);
       await persistSessionCursorAndMastery(outcome.session);
 
-      return { feedback: outcome.feedback, mastery: outcome.session.mastery };
+      return { feedback: outcome.feedback, session: outcome.session };
     },
   );
 }

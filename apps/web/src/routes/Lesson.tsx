@@ -83,13 +83,13 @@ export function Lesson(): ReactElement {
     setFeedback({ correct: result.correct, rationale: result.rationale, raw: result });
   };
 
-  const handleMCQSubmit = (optionId: string) => {
+  const handleMCQSubmit = async (optionId: string) => {
     if (!currentCheckpoint || currentCheckpoint.type !== 'quiz-mcq' || !lesson) return;
     const option = currentCheckpoint.options.find((item) => item.id === optionId);
     if (!option) return;
     setSelectedOptionId(optionId);
 
-    const result = submitAttempt({
+    const result = await submitAttempt({
       lessonId: lesson.id,
       checkpointId: currentCheckpoint.id,
       selectedOptionId: optionId,
@@ -101,13 +101,13 @@ export function Lesson(): ReactElement {
     applyFeedback(result);
   };
 
-  const handleFillSubmit = () => {
+  const handleFillSubmit = async () => {
     if (!currentCheckpoint || currentCheckpoint.type !== 'fill-blank' || !lesson) return;
     const expected = currentCheckpoint.answer.trim();
     const response = fillValue.trim();
     const isCorrect = response.localeCompare(expected, undefined, { sensitivity: 'accent' }) === 0;
 
-    const result = submitAttempt({
+    const result = await submitAttempt({
       lessonId: lesson.id,
       checkpointId: currentCheckpoint.id,
       responseText: fillValue,
@@ -119,9 +119,9 @@ export function Lesson(): ReactElement {
     applyFeedback(result);
   };
 
-  const handleCodeSubmit = () => {
+  const handleCodeSubmit = async () => {
     if (!currentCheckpoint || currentCheckpoint.type !== 'code-cell' || !lesson) return;
-    const result = submitAttempt({
+    const result = await submitAttempt({
       lessonId: lesson.id,
       checkpointId: currentCheckpoint.id,
       responseText: codeValue,
