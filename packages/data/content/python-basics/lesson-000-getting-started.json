@@ -1,0 +1,66 @@
+{
+  "kind": "lesson",
+  "id": "lesson.python.basics.getting-started",
+  "moduleId": "module.python.basics.intro",
+  "title": "Getting Started with Python",
+  "summary": "What Python is and what a variable is, in plain language, before any syntax.",
+  "durationMinutes": 5,
+  "checkpoints": [
+    {
+      "id": "checkpoint.getting-started.what-is-python",
+      "type": "note",
+      "title": "What is Python?",
+      "content": "Python is a programming language: you write step-by-step instructions called code, and the computer runs them in order, one line at a time. Every lesson here lets you write and run real code yourself, right in the browser — no installation needed.",
+      "explanation": "You don't need to memorize anything yet — you'll see real code and run it starting in the next lesson.",
+      "hints": {
+        "H0": "Think of code as a recipe: a list of steps the computer follows in order.",
+        "H1": "You'll type real Python and immediately see what it does — that's how every lesson works.",
+        "H2": "No setup needed — just click Continue when you're ready to see your first example."
+      }
+    },
+    {
+      "id": "checkpoint.getting-started.what-is-a-variable",
+      "type": "note",
+      "title": "What is a variable?",
+      "content": "A variable is a named box that holds a value. Writing `age = 7` creates a box named `age` and puts 7 inside it. Later, whenever your code uses `age`, Python looks inside that box to find 7.",
+      "explanation": "Names make code easier to read and change — you update the box's contents in one place instead of everywhere that value is used.",
+      "hints": {
+        "H0": "The `=` sign doesn't mean \"equals\" like in math — it means \"store this value under this name.\"",
+        "H1": "`age = 7` reads as: put the value 7 into a box named age.",
+        "H2": "If you later write `age = 8`, the same box now holds 8 instead."
+      }
+    },
+    {
+      "id": "checkpoint.getting-started.quiz-concept",
+      "type": "quiz-mcq",
+      "title": "Check your understanding",
+      "content": "If you write `age = 7`, what is `age`?",
+      "options": [
+        {
+          "id": "option.getting-started.concept.fixed",
+          "text": "A fixed value that can never change.",
+          "isCorrect": false,
+          "explanation": "Variables can be reassigned — writing `age = 8` later would change what's inside the box."
+        },
+        {
+          "id": "option.getting-started.concept.name",
+          "text": "A name that currently points to the value 7.",
+          "isCorrect": true,
+          "explanation": "Exactly — `age` is a name pointing at a value, and it can point at a different value later."
+        },
+        {
+          "id": "option.getting-started.concept.equation",
+          "text": "A math equation Python needs to solve.",
+          "isCorrect": false,
+          "explanation": "There's nothing to solve here — it's an instruction to store a value under a name, not an equation."
+        }
+      ],
+      "explanation": "A variable is just a name attached to a value, and that name can be pointed at a new value at any time.",
+      "hints": {
+        "H0": "Re-read the box analogy from the previous note.",
+        "H1": "The name `age` isn't the number itself — it's a label on a box containing the number.",
+        "H2": "The correct answer describes a name pointing at a value, not the value itself being fixed."
+      }
+    }
+  ]
+}

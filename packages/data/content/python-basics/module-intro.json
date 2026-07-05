@@ -7,6 +7,11 @@
   "summary": "Scaffold the REPL mindset and highlight how Python stores data.",
   "lessons": [
     {
+      "id": "lesson.python.basics.getting-started",
+      "title": "Getting Started with Python",
+      "path": "./lesson-000-getting-started.json"
+    },
+    {
       "id": "lesson.python.basics.variables",
       "title": "Variables in Python",
       "path": "./lesson-001-variables.json"

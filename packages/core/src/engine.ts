@@ -19,7 +19,12 @@ export interface SubmissionOutcome {
   feedback: SubmissionFeedback;
 }
 
-export function startSession(track: Track): SessionState {
+export interface StartSessionOptions {
+  /** Skip straight to this lesson's first checkpoint (e.g. onboarding placement). */
+  startingLessonId?: string;
+}
+
+export function startSession(track: Track, options?: StartSessionOptions): SessionState {
   const baseMastery: Mastery = {
     overallPercent: DEFAULT_OVERALL_MASTERY,
     lessonPercent: buildLessonPercentMap(track),
@@ -34,12 +39,24 @@ export function startSession(track: Track): SessionState {
     startedAt: Date.now(),
   };
 
-  const firstRef = selectNextCheckpoint(track, emptySession);
+  const firstRef =
+    firstCheckpointOfLesson(track, options?.startingLessonId) ??
+    selectNextCheckpoint(track, emptySession);
   return {
     ...emptySession,
     currentLessonId: firstRef?.lessonId,
     currentCheckpointId: firstRef?.checkpointId,
   };
+}
+
+export function firstCheckpointOfLesson(
+  track: Track,
+  lessonId?: string,
+): CheckpointRef | undefined {
+  if (!lessonId) return undefined;
+  const lesson = findLesson(track, lessonId);
+  const checkpoint = lesson?.checkpoints[0];
+  return checkpoint ? { lessonId, checkpointId: checkpoint.id } : undefined;
 }
 
 export function selectNextCheckpoint(

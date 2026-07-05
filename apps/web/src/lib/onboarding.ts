@@ -1,4 +1,8 @@
-export type StartingLevel = 'new' | 'basics' | 'loops' | 'scripts';
+import type { StartingLevel } from '@pylearn/core';
+
+export type { StartingLevel } from '@pylearn/core';
+export { recommendedStartingLessonId } from '@pylearn/core';
+
 export type LearningGoal = 'general' | 'devops' | 'network';
 
 export interface OnboardingAnswers {
@@ -18,22 +22,6 @@ export const LEARNING_GOAL_OPTIONS: { value: LearningGoal; label: string }[] = [
   { value: 'devops', label: 'Automation for DevOps' },
   { value: 'network', label: 'Automation for networking' },
 ];
-
-/**
- * Recommended lesson to jump to based on prior-knowledge self-assessment.
- * Only two lessons exist today, so this is a small lookup, not an adaptive
- * engine — it grows as content grows.
- */
-const STARTING_LESSON_BY_LEVEL: Record<StartingLevel, string> = {
-  new: 'lesson.python.basics.variables',
-  basics: 'lesson.python.basics.variables',
-  loops: 'lesson.python.basics.types',
-  scripts: 'lesson.python.basics.types',
-};
-
-export function recommendedStartingLessonId(level: StartingLevel): string {
-  return STARTING_LESSON_BY_LEVEL[level];
-}
 
 const LOCAL_STORAGE_KEY = 'pylearn:onboarding';
 

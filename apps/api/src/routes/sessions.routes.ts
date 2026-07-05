@@ -17,7 +17,11 @@ export function registerSessionRoutes(app: FastifyInstance): void {
         reply.code(404).send({ error: 'Track not found' });
         return;
       }
-      const session = await getOrCreateSession(request.user!.id, track);
+      const session = await getOrCreateSession(
+        request.user!.id,
+        track,
+        request.user!.startingLevel,
+      );
       const summary = getSummary(track, session);
       return { session, summary };
     },

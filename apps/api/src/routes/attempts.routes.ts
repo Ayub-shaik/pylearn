@@ -33,7 +33,11 @@ export function registerAttemptRoutes(app: FastifyInstance): void {
         return;
       }
 
-      const session = await getOrCreateSession(request.user!.id, track);
+      const session = await getOrCreateSession(
+        request.user!.id,
+        track,
+        request.user!.startingLevel,
+      );
       const attempt: Attempt = {
         lessonId: body.lessonId,
         checkpointId: body.checkpointId,

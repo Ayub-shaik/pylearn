@@ -10,6 +10,7 @@ import {
   submitAttemptRemote,
 } from '../lib/api';
 import { loadSessionState, saveSessionState } from '../lib/db';
+import { loadLocalOnboarding } from '../lib/onboarding';
 
 import {
   type Attempt,
@@ -23,10 +24,11 @@ import {
   type SubmissionOutcome,
   type Track,
   getSummary,
-  selectNextCheckpoint,
+  recommendedStartingLessonId,
   startSession,
   submitAnswer,
 } from '@pylearn/core';
+import lessonGettingStartedJson from '@pylearn/data/content/python-basics/lesson-000-getting-started.json';
 import lessonVariablesJson from '@pylearn/data/content/python-basics/lesson-001-variables.json';
 import lessonTypesJson from '@pylearn/data/content/python-basics/lesson-002-types.json';
 import moduleIntroJson from '@pylearn/data/content/python-basics/module-intro.json';
@@ -58,7 +60,7 @@ export interface SubmitAttemptPayload {
 }
 
 export interface AppActions {
-  setActiveLesson: (_lessonId: string) => void;
+  setActiveLesson: (_lessonId: string) => Promise<void>;
   submitAttempt: (_payload: SubmitAttemptPayload) => Promise<SubmissionFeedback | undefined>;
   signIn: () => void;
   signOut: () => Promise<void>;
@@ -114,13 +116,11 @@ export function AppStoreProvider({ children }: { children: ReactNode }): ReactEl
         if (persisted) {
           session = persisted;
         } else {
-          const baseSession = startSession(track);
-          const initialRef = selectNextCheckpoint(track, baseSession);
-          session = {
-            ...baseSession,
-            currentLessonId: initialRef?.lessonId,
-            currentCheckpointId: initialRef?.checkpointId,
-          };
+          const startingLevel = loadLocalOnboarding()?.startingLevel;
+          const startingLessonId = startingLevel
+            ? recommendedStartingLessonId(startingLevel)
+            : undefined;
+          session = startSession(track, { startingLessonId });
           persistSession(session);
         }
 
@@ -149,32 +149,29 @@ export function AppStoreProvider({ children }: { children: ReactNode }): ReactEl
     window.location.reload();
   }, []);
 
-  const setActiveLesson = useCallback(
-    (lessonId: string) => {
-      let nextSession: SessionState | undefined;
-      setInternal((prev) => {
-        if (!prev.track || !prev.session) return prev;
-        const lesson = findLesson(prev.track, lessonId);
-        if (!lesson) return prev;
-        const nextCheckpoint = findFirstUnattemptedInLesson(prev.track, prev.session, lessonId);
-        const fallbackCheckpoint = lesson.checkpoints[0]?.id;
-        nextSession = {
-          ...prev.session,
-          currentLessonId: lessonId,
-          currentCheckpointId: nextCheckpoint?.checkpointId ?? fallbackCheckpoint,
-        };
-        return {
-          ...prev,
-          session: nextSession,
-        };
-      });
+  const setActiveLesson = useCallback(async (lessonId: string) => {
+    let nextSession: SessionState | undefined;
+    setInternal((prev) => {
+      if (!prev.track || !prev.session) return prev;
+      const lesson = findLesson(prev.track, lessonId);
+      if (!lesson) return prev;
+      const nextCheckpoint = findFirstUnattemptedInLesson(prev.track, prev.session, lessonId);
+      const fallbackCheckpoint = lesson.checkpoints[0]?.id;
+      nextSession = {
+        ...prev.session,
+        currentLessonId: lessonId,
+        currentCheckpointId: nextCheckpoint?.checkpointId ?? fallbackCheckpoint,
+      };
+      return {
+        ...prev,
+        session: nextSession,
+      };
+    });
 
-      if (nextSession) {
-        persistSession(nextSession);
-      }
-    },
-    [persistSession],
-  );
+    if (nextSession) {
+      await saveSessionState(nextSession);
+    }
+  }, []);
 
   const submitAttempt = useCallback(
     async (payload: SubmitAttemptPayload): Promise<SubmissionFeedback | undefined> => {
@@ -294,6 +291,7 @@ export function useAppStore(): AppStore {
 
 function buildDefaultTrack(): Track {
   const lessonMap = new Map<string, Lesson>([
+    ['./lesson-000-getting-started.json', lessonGettingStartedJson as Lesson],
     ['./lesson-001-variables.json', lessonVariablesJson as Lesson],
     ['./lesson-002-types.json', lessonTypesJson as Lesson],
   ]);

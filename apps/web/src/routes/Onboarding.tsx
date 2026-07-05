@@ -4,6 +4,7 @@ import type { ReactElement } from 'react';
 import { saveOnboarding } from '../lib/api';
 import {
   LEARNING_GOAL_OPTIONS,
+  recommendedStartingLessonId,
   saveLocalOnboarding,
   STARTING_LEVEL_OPTIONS,
   type LearningGoal,
@@ -14,7 +15,7 @@ import { useAppStore } from '../state/store';
 type Step = 'welcome' | 'level' | 'goal';
 
 export function Onboarding(): ReactElement {
-  const { authStatus } = useAppStore();
+  const { authStatus, setActiveLesson } = useAppStore();
   const [step, setStep] = useState<Step>('welcome');
   const [startingLevel, setStartingLevel] = useState<StartingLevel | null>(null);
   const [learningGoal, setLearningGoal] = useState<LearningGoal | null>(null);
@@ -25,9 +26,17 @@ export function Onboarding(): ReactElement {
     setSaving(true);
     try {
       if (authStatus === 'authenticated') {
+        // Placement for the already-existing (auto-created on first page
+        // visit, before onboarding was known) session happens server-side
+        // as part of this call.
         await saveOnboarding(startingLevel, learningGoal);
       } else {
         saveLocalOnboarding({ startingLevel, learningGoal });
+        // A session was already auto-created (and persisted to IndexedDB)
+        // the moment this page first mounted, before any answer existed.
+        // Reposition it now that we know where to place the learner, and
+        // wait for the write to finish before the hard navigation below.
+        await setActiveLesson(recommendedStartingLessonId(startingLevel));
       }
     } finally {
       window.location.href = '/tracks';

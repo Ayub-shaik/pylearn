@@ -2,15 +2,26 @@ import { and, asc, eq } from 'drizzle-orm';
 
 import { db, schema } from './db/client';
 
-import type { Attempt, Mastery, SessionState, Track } from '@pylearn/core';
-import { startSession } from '@pylearn/core';
+import type { Attempt, Mastery, SessionState, StartingLevel, Track } from '@pylearn/core';
+import {
+  firstCheckpointOfLesson,
+  isStartingLevel,
+  recommendedStartingLessonId,
+  startSession,
+} from '@pylearn/core';
 
-
-export async function getOrCreateSession(userId: string, track: Track): Promise<SessionState> {
+export async function getOrCreateSession(
+  userId: string,
+  track: Track,
+  startingLevel?: StartingLevel | string | null,
+): Promise<SessionState> {
   const existing = await loadSessionState(userId, track.id);
   if (existing) return existing;
 
-  const fresh = startSession(track);
+  const startingLessonId = isStartingLevel(startingLevel)
+    ? recommendedStartingLessonId(startingLevel)
+    : undefined;
+  const fresh = startSession(track, { startingLessonId });
   await db.insert(schema.learningSessions).values({
     id: fresh.id,
     userId,
@@ -23,6 +34,41 @@ export async function getOrCreateSession(userId: string, track: Track): Promise<
     masteryUpdatedAt: new Date(fresh.mastery.updatedAt),
   });
   return fresh;
+}
+
+/**
+ * Apply onboarding placement to a user's session for this track: creates a
+ * freshly-placed session if none exists yet, or repositions the cursor of
+ * an existing one IF it has no recorded attempts yet (so this never clobbers
+ * real progress — it only fixes the common case where a session was already
+ * auto-created, with no placement, by an earlier page visit before the user
+ * finished onboarding).
+ */
+export async function placeSessionAtStartingLevel(
+  userId: string,
+  track: Track,
+  startingLevel: StartingLevel | string | null | undefined,
+): Promise<void> {
+  if (!isStartingLevel(startingLevel)) return;
+
+  const startingLessonId = recommendedStartingLessonId(startingLevel);
+  const existing = await loadSessionState(userId, track.id);
+
+  if (!existing) {
+    await getOrCreateSession(userId, track, startingLevel);
+    return;
+  }
+
+  if (existing.attempts.length > 0) return;
+
+  const targetRef = firstCheckpointOfLesson(track, startingLessonId);
+  if (!targetRef) return;
+
+  await persistSessionCursorAndMastery({
+    ...existing,
+    currentLessonId: targetRef.lessonId,
+    currentCheckpointId: targetRef.checkpointId,
+  });
 }
 
 export async function loadSessionState(
