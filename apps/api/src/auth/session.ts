@@ -11,6 +11,8 @@ export interface AuthUser {
   email: string;
   displayName: string | null;
   avatarUrl: string | null;
+  startingLevel: string | null;
+  learningGoal: string | null;
 }
 
 export async function createSession(reply: FastifyReply, userId: string): Promise<void> {
@@ -54,6 +56,8 @@ export async function getUserFromRequest(request: FastifyRequest): Promise<AuthU
       email: schema.users.email,
       displayName: schema.users.displayName,
       avatarUrl: schema.users.avatarUrl,
+      startingLevel: schema.users.startingLevel,
+      learningGoal: schema.users.learningGoal,
       expiresAt: schema.authSessions.expiresAt,
     })
     .from(schema.authSessions)
@@ -64,5 +68,12 @@ export async function getUserFromRequest(request: FastifyRequest): Promise<AuthU
   const row = rows[0];
   if (!row || row.expiresAt.getTime() < Date.now()) return undefined;
 
-  return { id: row.id, email: row.email, displayName: row.displayName, avatarUrl: row.avatarUrl };
+  return {
+    id: row.id,
+    email: row.email,
+    displayName: row.displayName,
+    avatarUrl: row.avatarUrl,
+    startingLevel: row.startingLevel,
+    learningGoal: row.learningGoal,
+  };
 }

@@ -1,6 +1,7 @@
 import type { ReactElement } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+import { LEARNING_GOAL_OPTIONS, loadLocalOnboarding } from '../lib/onboarding';
 import { useAppStore } from '../state/store';
 
 import { computeCurrentStreak } from '@pylearn/core';
@@ -9,7 +10,8 @@ import { LessonCard, StreakChip } from '@pylearn/ui-kit';
 
 export function Tracks(): ReactElement {
   const navigate = useNavigate();
-  const { track, loading, error, attempts, session, summary, setActiveLesson } = useAppStore();
+  const { track, loading, error, attempts, session, summary, authStatus, user, setActiveLesson } =
+    useAppStore();
 
   if (loading) {
     return (
@@ -61,6 +63,10 @@ export function Tracks(): ReactElement {
     navigate(`/lesson/${lessonId}`);
   };
 
+  const learningGoal =
+    authStatus === 'authenticated' ? user?.learningGoal : loadLocalOnboarding()?.learningGoal;
+  const learningGoalLabel = LEARNING_GOAL_OPTIONS.find((o) => o.value === learningGoal)?.label;
+
   return (
     <div className="space-y-6">
       <div className="card mx-auto max-w-4xl space-y-3 p-6">
@@ -69,6 +75,12 @@ export function Tracks(): ReactElement {
           <StreakChip streakCount={computeCurrentStreak(attempts)} />
         </div>
         <p className="text-sm text-slate-300">{track.summary}</p>
+        {learningGoalLabel ? (
+          <p className="text-xs text-slate-500">
+            Recommended for: {learningGoalLabel} — more goal-specific tracks are coming; everyone
+            takes Python Basics for now.
+          </p>
+        ) : null}
         <p className="text-xs uppercase tracking-wide text-slate-500">
           Checkpoints completed: {attempts.length} / {totalCheckpoints} · Overall mastery:{' '}
           {summary?.mastery.overallPercent ?? 0}%

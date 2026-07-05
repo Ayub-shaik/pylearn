@@ -32,6 +32,12 @@ export const config = {
     return Boolean(this.google.clientId && this.google.clientSecret);
   },
 
+  devGuestLogin: {
+    enabled: process.env.DEV_GUEST_LOGIN_ENABLED === 'true',
+    username: process.env.DEV_GUEST_USERNAME ?? '',
+    password: process.env.DEV_GUEST_PASSWORD ?? '',
+  },
+
   ollama: {
     baseUrl: process.env.OLLAMA_BASE_URL ?? 'http://host.docker.internal:11434',
     model: process.env.LLM_MODEL ?? 'llama3.2:3b',

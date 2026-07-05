@@ -7,6 +7,8 @@ export interface AuthUser {
   email: string;
   displayName: string | null;
   avatarUrl: string | null;
+  startingLevel: string | null;
+  learningGoal: string | null;
 }
 
 export interface AuthMeResponse {
@@ -37,7 +39,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return response.json() as Promise<T>;
 }
 
-export function getAuthConfig(): Promise<{ googleEnabled: boolean }> {
+export function getAuthConfig(): Promise<{ googleEnabled: boolean; guestLoginEnabled: boolean }> {
   return request('/auth/config');
 }
 
@@ -51,6 +53,20 @@ export function logout(): Promise<{ ok: boolean }> {
 
 export function googleSignInUrl(): string {
   return `${API_BASE}/auth/google/start`;
+}
+
+export function guestLogin(username: string, password: string): Promise<{ ok: boolean }> {
+  return request('/auth/guest', { method: 'POST', body: JSON.stringify({ username, password }) });
+}
+
+export function saveOnboarding(
+  startingLevel: string,
+  learningGoal: string,
+): Promise<{ ok: boolean }> {
+  return request('/profile/onboarding', {
+    method: 'PUT',
+    body: JSON.stringify({ startingLevel, learningGoal }),
+  });
 }
 
 export function getSession(trackId: string): Promise<{ session: SessionState; summary: unknown }> {
@@ -80,4 +96,15 @@ export interface RequestHintPayload {
 
 export function requestHint(payload: RequestHintPayload): Promise<HintResponse> {
   return request('/llm/hint', { method: 'POST', body: JSON.stringify(payload) });
+}
+
+export interface RequestChatPayload {
+  trackId: string;
+  lessonId: string;
+  checkpointId: string;
+  message: string;
+}
+
+export function requestChat(payload: RequestChatPayload): Promise<HintResponse> {
+  return request('/llm/chat', { method: 'POST', body: JSON.stringify(payload) });
 }

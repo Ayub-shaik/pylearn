@@ -17,6 +17,8 @@ export const users = pgTable('users', {
   email: text('email').notNull().unique(),
   displayName: text('display_name'),
   avatarUrl: text('avatar_url'),
+  startingLevel: text('starting_level'),
+  learningGoal: text('learning_goal'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   lastLoginAt: timestamp('last_login_at', { withTimezone: true }),
 });

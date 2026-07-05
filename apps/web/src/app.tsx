@@ -5,6 +5,7 @@ import { About } from './routes/About';
 import { Home } from './routes/Home';
 import { Lesson } from './routes/Lesson';
 import { Login } from './routes/Login';
+import { Onboarding } from './routes/Onboarding';
 import { Review } from './routes/Review';
 import { Settings } from './routes/Settings';
 import { Tracks } from './routes/Tracks';
@@ -68,6 +69,7 @@ export function App(): ReactElement {
           <Route path="/review" element={<Review />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/onboarding" element={<Onboarding />} />
           <Route path="/about" element={<About />} />
         </Routes>
       </main>

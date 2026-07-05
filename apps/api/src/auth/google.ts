@@ -25,7 +25,10 @@ interface GoogleProfile {
 }
 
 export function registerAuthRoutes(app: FastifyInstance): void {
-  app.get('/api/auth/config', async () => ({ googleEnabled: config.googleConfigured }));
+  app.get('/api/auth/config', async () => ({
+    googleEnabled: config.googleConfigured,
+    guestLoginEnabled: config.devGuestLogin.enabled,
+  }));
 
   app.get('/api/auth/google/start', async (request, reply) => {
     if (!config.googleConfigured) {

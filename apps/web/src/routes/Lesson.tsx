@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { ReactElement } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
-import { requestHint } from '../lib/api';
+import { requestChat, requestHint } from '../lib/api';
 import { useAppStore } from '../state/store';
 
 import { advanceHintLevel, hintUsageCount } from '@pylearn/core';
@@ -13,7 +13,8 @@ import type {
   Lesson as LessonType,
   SubmissionFeedback,
 } from '@pylearn/core';
-import { CodeCell, FillBlank, HintPanel, ProgressBar, QuizMCQ } from '@pylearn/ui-kit';
+import { ChatBox, CodeCell, FillBlank, HintPanel, ProgressBar, QuizMCQ } from '@pylearn/ui-kit';
+import type { ChatMessage } from '@pylearn/ui-kit';
 
 interface LocalFeedback {
   correct: boolean;
@@ -25,6 +26,17 @@ interface AiHint {
   content: string;
   provider: string;
 }
+
+const CHAT_PROMPTS_BY_TYPE: Record<Checkpoint['type'], string[]> = {
+  'quiz-mcq': [
+    'Why is this correct?',
+    "I'm stuck, explain differently",
+    'Give me a simpler example',
+  ],
+  'fill-blank': ["I'm stuck, explain differently", 'Give me a simpler example'],
+  'code-cell': ['Why did my code fail?', "I'm stuck, explain differently"],
+  note: ['Can you explain this another way?', 'Give me a real-world example'],
+};
 
 const HINT_LEVELS: HintLevel[] = ['H0', 'H1', 'H2'];
 
@@ -52,6 +64,8 @@ export function Lesson(): ReactElement {
   const [hintStage, setHintStage] = useState<HintStage | null>(null);
   const [feedback, setFeedback] = useState<LocalFeedback | null>(null);
   const [aiHints, setAiHints] = useState<Partial<Record<HintLevel, AiHint>>>({});
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [chatLoading, setChatLoading] = useState(false);
 
   useEffect(() => {
     if (currentCheckpoint?.type === 'code-cell') {
@@ -64,6 +78,8 @@ export function Lesson(): ReactElement {
     setHintStage(null);
     setFeedback(null);
     setAiHints({});
+    setChatMessages([]);
+    setChatLoading(false);
   }, [currentCheckpoint?.id]);
 
   const lesson = useMemo(() => {
@@ -182,6 +198,47 @@ export function Lesson(): ReactElement {
     applyFeedback(result);
   };
 
+  const handleNoteContinue = async () => {
+    if (!currentCheckpoint || currentCheckpoint.type !== 'note' || !lesson) return;
+    const result = await submitAttempt({
+      lessonId: lesson.id,
+      checkpointId: currentCheckpoint.id,
+      isCorrect: true,
+      revealsUsed: 0,
+      lastHintLevel: null,
+    });
+
+    applyFeedback(result);
+  };
+
+  const handleChatSend = async (message: string) => {
+    if (!track || !lesson || !currentCheckpoint) return;
+    setChatMessages((prev) => [...prev, { role: 'user', content: message }]);
+    setChatLoading(true);
+    try {
+      const response = await requestChat({
+        trackId: track.id,
+        lessonId: lesson.id,
+        checkpointId: currentCheckpoint.id,
+        message,
+      });
+      setChatMessages((prev) => [
+        ...prev,
+        { role: 'assistant', content: response.content, provider: response.provider },
+      ]);
+    } catch {
+      setChatMessages((prev) => [
+        ...prev,
+        {
+          role: 'assistant',
+          content: "Sorry, I couldn't answer that just now. Try again in a moment.",
+        },
+      ]);
+    } finally {
+      setChatLoading(false);
+    }
+  };
+
   const handleNext = () => {
     if (nextRef) {
       setActiveLesson(nextRef.lessonId);
@@ -196,6 +253,13 @@ export function Lesson(): ReactElement {
       setCodeValue('');
     }
   };
+
+  const handleTryAgain = () => {
+    setFeedback(null);
+    setSelectedOptionId(undefined);
+  };
+
+  const canProgress = Boolean(feedback?.correct) || hintStage === 'REVEAL';
 
   if (loading) {
     return (
@@ -288,6 +352,7 @@ export function Lesson(): ReactElement {
             onMCQSubmit={handleMCQSubmit}
             onFillSubmit={handleFillSubmit}
             onCodeSubmit={handleCodeSubmit}
+            onNoteContinue={handleNoteContinue}
           />
 
           {feedback ? (
@@ -295,17 +360,39 @@ export function Lesson(): ReactElement {
               <span>
                 {feedback.correct ? '✅ Correct' : '❌ Incorrect'} — {feedback.rationale}
               </span>
-              {nextRef ? (
-                <button type="button" onClick={handleNext} className="btn btn-primary">
-                  Next checkpoint
-                </button>
+              {canProgress ? (
+                nextRef ? (
+                  <button type="button" onClick={handleNext} className="btn btn-primary">
+                    Next checkpoint
+                  </button>
+                ) : (
+                  <Link to="/tracks" className="btn btn-secondary">
+                    Back to tracks
+                  </Link>
+                )
               ) : (
-                <Link to="/tracks" className="btn btn-secondary">
-                  Back to tracks
-                </Link>
+                <button type="button" onClick={handleTryAgain} className="btn btn-primary">
+                  Try again
+                </button>
               )}
             </footer>
           ) : null}
+
+          {authStatus === 'authenticated' ? (
+            <ChatBox
+              messages={chatMessages}
+              suggestedPrompts={CHAT_PROMPTS_BY_TYPE[currentCheckpoint.type]}
+              onSend={(message) => void handleChatSend(message)}
+              loading={chatLoading}
+            />
+          ) : (
+            <p className="text-xs text-slate-500">
+              <Link to="/login" className="text-primary-light underline">
+                Sign in
+              </Link>{' '}
+              to ask our AI tutor a question about this checkpoint.
+            </p>
+          )}
         </div>
       ) : (
         <div className="card p-6">
@@ -334,6 +421,7 @@ interface CheckpointContentProps {
   onMCQSubmit: (_optionId: string) => void;
   onFillSubmit: () => void;
   onCodeSubmit: () => void;
+  onNoteContinue: () => void;
 }
 
 function CheckpointContent({
@@ -348,6 +436,7 @@ function CheckpointContent({
   onMCQSubmit,
   onFillSubmit,
   onCodeSubmit,
+  onNoteContinue,
 }: CheckpointContentProps): ReactElement | null {
   switch (checkpoint.type) {
     case 'quiz-mcq':
@@ -409,11 +498,21 @@ function CheckpointContent({
     case 'note':
     default:
       return (
-        <div
-          className="rounded-md border border-slate-800 bg-slate-900/60 px-4 py-3 text-sm text-slate-200"
-          role="note"
-        >
-          {checkpoint.explanation}
+        <div className="space-y-3">
+          <div
+            className="rounded-md border border-slate-800 bg-slate-900/60 px-4 py-3 text-sm text-slate-200"
+            role="note"
+          >
+            {checkpoint.explanation}
+          </div>
+          <button
+            type="button"
+            className="btn btn-primary"
+            disabled={submitted}
+            onClick={onNoteContinue}
+          >
+            Continue
+          </button>
         </div>
       );
   }

@@ -14,6 +14,13 @@ export interface GenerationRequest {
   prompt: string;
   groundingTerms: string[];
   fallback: string;
+  /**
+   * Whether this task's output is safe to cache/reuse across requests.
+   * True for a fixed set of variants (e.g. hint levels). Must be false for
+   * freeform input (e.g. chat messages) — caching by checkpointId+task alone
+   * would return a stale answer to an unrelated question.
+   */
+  cacheable?: boolean;
 }
 
 export type GenerationProvider = 'cache' | 'ollama' | 'nvidia-nim' | 'template';
@@ -29,20 +36,24 @@ export interface GenerationResult {
  * trusting any live-generated output.
  */
 export async function generate(request: GenerationRequest): Promise<GenerationResult> {
-  const cached = await getCached(request.checkpointId, request.task);
-  if (cached) return { content: cached, provider: 'cache' };
+  const cacheable = request.cacheable ?? true;
+
+  if (cacheable) {
+    const cached = await getCached(request.checkpointId, request.task);
+    if (cached) return { content: cached, provider: 'cache' };
+  }
 
   if (canAttemptOllama() && (await probeOllama(config.ollama.baseUrl, 300))) {
     const output = await withOllamaSlot(() => generateWithOllama({ prompt: request.prompt }));
     if (output && looksGrounded(output, request.groundingTerms)) {
-      await cacheResult(request.checkpointId, request.task, output, 'ollama');
+      if (cacheable) await cacheResult(request.checkpointId, request.task, output, 'ollama');
       return { content: output, provider: 'ollama' };
     }
   }
 
   const overflow = await generateWithNvidiaNim({ prompt: request.prompt });
   if (overflow && looksGrounded(overflow, request.groundingTerms)) {
-    await cacheResult(request.checkpointId, request.task, overflow, 'nvidia-nim');
+    if (cacheable) await cacheResult(request.checkpointId, request.task, overflow, 'nvidia-nim');
     return { content: overflow, provider: 'nvidia-nim' };
   }
 

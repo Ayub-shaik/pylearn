@@ -1,6 +1,7 @@
 import type { ReactElement } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
+import { loadLocalOnboarding } from '../lib/onboarding';
 import { useAppStore } from '../state/store';
 
 import { computeCurrentStreak } from '@pylearn/core';
@@ -8,7 +9,8 @@ import { StreakChip } from '@pylearn/ui-kit';
 
 export function Home(): ReactElement {
   const navigate = useNavigate();
-  const { loading, error, session, currentLesson, summary, setActiveLesson } = useAppStore();
+  const { loading, error, session, currentLesson, summary, authStatus, user, setActiveLesson } =
+    useAppStore();
 
   if (loading) {
     return (
@@ -32,6 +34,9 @@ export function Home(): ReactElement {
     );
   }
 
+  const hasOnboarded =
+    authStatus === 'authenticated' ? Boolean(user?.startingLevel) : Boolean(loadLocalOnboarding());
+
   const resumeLessonId = session?.currentLessonId;
   const canResume = Boolean(resumeLessonId);
 
@@ -40,6 +45,22 @@ export function Home(): ReactElement {
     setActiveLesson(resumeLessonId);
     navigate(`/lesson/${resumeLessonId}`);
   };
+
+  if (!hasOnboarded) {
+    return (
+      <div className="card mx-auto max-w-3xl space-y-4 p-6">
+        <header className="space-y-2">
+          <h2 className="text-2xl font-semibold text-white">Welcome to PyLearn</h2>
+          <p className="text-sm text-slate-300">
+            Two quick questions get you started in the right place — takes about a minute.
+          </p>
+        </header>
+        <Link to="/onboarding" className="btn btn-primary w-fit">
+          Get started
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
