@@ -1,20 +1,20 @@
-SDLC — PyLearn (Local-First AI Python Learning App)
+SDLC — PyLearn (Online Python Learning App, Web-First, Account-Based)
 
-Targets: Web (PWA) first → Android next
-Principles: Local LLM by default, offline-first, component reuse, additive phases, no revamps
+Targets: Web (account-based, mobile-browser-first) now -> Native mobile (Play Store, React Native or native Kotlin/Swift — NOT a WebView) later, as an explicitly separate phase.
+Principles: Retrieval-first / curated-content-first for LLM use, offline/anonymous mode as a secondary fallback (not the headline story), component reuse, additive phases, no revamps. A small self-hosted LLM runs behind our backend — no paid cloud API keys required for the core product.
 Tracking: Convert checklist items to GitHub Issues. Use the labels & IDs provided.
 
 Legend
 
-[] = To do [~] = In progress [x] = Done
+[] = To do [~] = In progress [x] = Done
 
-Labels: phase:X, area:core|ui|llm|speech|web|android|infra|content, type:feat|chore|fix|docs|test, prio:P1|P2|P3
+Labels: phase:X, area:core|ui|llm|speech|web|api|infra|content, type:feat|chore|fix|docs|test, prio:P1|P2|P3
 
 Phase 0 — Repo, Conventions, Ground Rules
 
 Exit Criteria
 
-Monorepo scaffolding decided, coding standards documented, CI sanity checks green.
+Monorepo scaffolding decided (now including `apps/api`), coding standards documented, CI sanity checks green.
 
 Checklists
 
@@ -34,7 +34,7 @@ P0.2 Tooling
 
 [x] Choose package manager: pnpm workspaces.
 
-[x] Root package.json with workspaces.
+[x] Root package.json with workspaces (now spans apps/web + apps/api).
 
 [x] Add Prettier + ESLint configs.
 
@@ -42,21 +42,23 @@ P0.2 Tooling
 
 [] Basic CI: Node setup, pnpm i, pnpm -w build, pnpm -w test.
 
-P0.3 Monorepo Layout (no code yet—folders only)
+P0.3 Monorepo Layout
 
 pylearn/
 apps/
-web/
-android/
+web/ # React + Vite + TS SPA
+api/ # Fastify + TS backend: accounts, sessions, LLM proxy
+android/ # placeholder for the later, separate native mobile phase
 packages/
-core/
-ui-kit/
-llm/
-speech/
-data/
-docs/
+core/ # Domain logic: lesson graph, adaptive engine, scoring, hinting, mastery — reused by both apps/web and apps/api
+llm/ # Shared LLM types + probeOllama detection helper (actual generation logic lives in apps/api)
+speech/ # ASR/TTS wrappers (future)
+ui-kit/ # Reusable UI components (cards, quiz widgets, code runner, progress bars)
+data/ # Lesson content, quizzes, explanations (versioned JSON/MD) — server-owned source of truth
 infra/
-scripts/
+nginx/ # Reverse proxy config (serves web static bundle, proxies /api to the api service)
+docker-compose.yml # web + api + db (Postgres); host Ollama reused as-is, not containerized
+scripts/ # Dev scripts, content validators
 
 [x] Create directories + placeholder README.md in each.
 
@@ -72,7 +74,7 @@ Phase 1 — Curriculum & UX Specification
 
 Exit Criteria
 
-Lesson schema approved, “Python Basics” track outlined, UX flows frozen.
+Lesson schema approved, "Python Basics" track outlined, UX flows frozen.
 
 Checklists
 
@@ -92,7 +94,7 @@ P1.2 UX Flows & Copy
 
 [] Flow: Lesson → mini-challenge → hints → explanation → mastery tick.
 
-[] “Teacher voice” script guidelines (tone, “Okay, let’s put you to the test.” moments).
+[] "Teacher voice" script guidelines (tone, "Okay, let's put you to the test." moments).
 
 [] Error states & stuck handling (3 hints → reveal → micro-lesson).
 
@@ -100,9 +102,9 @@ P1.2 UX Flows & Copy
 
 P1.3 Data Privacy
 
-[] Decide storage keys for progress (local-only default).
+[x] Decide storage model: signed-in users persist server-side (Postgres) as the default; anonymous users fall back to local-only (IndexedDB) storage.
 
-[] Export/import encrypted file format spec.
+[] Export/import encrypted file format spec (nice-to-have, not required for launch).
 
 Acceptance Tests
 
@@ -114,21 +116,21 @@ Phase 2 — Shared Core & UI Kit (Foundations)
 
 Exit Criteria
 
-Core learning engine + reusable UI widgets with unit tests.
+Core learning engine + reusable UI widgets with unit tests, usable identically from the browser and from `apps/api`.
 
 Checklists
 
 P2.1 packages/core (Engines)
 
-[] Lesson Graph loader (validate against schema).
+[x] Lesson Graph loader (validate against schema) — server-only entry point (`@pylearn/core/loader`), kept out of the browser bundle since it touches the filesystem.
 
-[] Mastery model (per-topic %; update rule per attempt).
+[] Mastery model (per-topic %; update rule per attempt) — real implementation shipped (`updateMastery`/`computeMasteryDelta`, wired into `submitAnswer`); still needs tuning once real usage data exists.
 
-[] Scoring (XP, streaks, penalties for reveals).
+[x] Scoring (XP, streaks, penalties for reveals).
 
-[] Adaptive policy: choose next checkpoint by mastery & recent mistakes.
+[] Adaptive policy: choose next checkpoint by mastery & recent mistakes (currently: first-unattempted-checkpoint only).
 
-[x] Hint policy state machine (H0 → H1 → H2 → Reveal). (implemented hint cycling, rationale, and scoring penalties)
+[x] Hint policy state machine (H0 → H1 → H2 → Reveal).
 
 [] Result types & telemetry interfaces (local only).
 
@@ -138,7 +140,7 @@ P2.2 packages/ui-kit (Components)
 
 [x] Minimal theme tokens (font sizes, spacing, elevation).
 
-[x] PWA manifest + offline shell caching.
+[x] PWA manifest + offline shell caching (kept as a convenience layer, not the primary story).
 
 [] Keyboard-first interactions & focus rings.
 
@@ -148,7 +150,7 @@ P2.3 packages/data (Content Store)
 
 [x] Content validator CLI (pnpm data:lint).
 
-[x] Sample “Python Basics” lessons with placeholder content.
+[x] Sample "Python Basics" lessons with placeholder content.
 
 P2.4 QA
 
@@ -162,246 +164,159 @@ Acceptance Tests
 
 [] Demo harness in Node simulates 3 learning sessions and outputs summaries.
 
-Phase 3 — Local AI Layer (LLM, Guardrails, Speech)
+Phase 3 — Backend Foundation
 
 Exit Criteria
 
-Local LLM answers, explains options (why/right/wrong), voice in/out works offline.
+`apps/api` (Fastify + TS) reachable in production behind the same domain as the web app, backed by Postgres, with zero user-facing behavior change yet.
 
 Checklists
 
-P3.1 packages/llm
-[] LLM routing order: Browser(WebLLM) → Ollama@localhost → (Phase 6) Free web search.
+P3.1 Service & Data Layer
 
-[] Ollama probe: 150–300 ms timeout to GET /api/tags; set llm.provider="ollama" if success.
+[x] `apps/api` skeleton importing `@pylearn/core` and `@pylearn/data` directly (no duplicated domain logic).
 
-[] Model policy:
+[x] Postgres schema + migrations: `users`, `auth_sessions`, `learning_sessions`, `attempts`, `llm_generations`.
 
-Browser default pack: qwen2.5-instruct-1.5b (upgrade to 3B).
+[x] `docker-compose.yml`: `web` + `api` + `db` services; host Ollama reused over `host.docker.internal`, not containerized.
 
-Ollama policy: explain=llama3.1:8b | deepseek-r1:7b, code_hint=qwen2.5-coder:7b.
+[x] nginx `location /api` reverse proxy so cookies stay same-origin under `pylearn.aysentra.com`.
 
-[~] Settings UI: Toggle “Use local Ollama if available”, model dropdown (persisted).
-
-[] Embeddings: Prefer pre-embedded lesson bank; if Ollama present and user enabled, allow local nomic-embed-text for custom material.
-
-[] Choose default browser model: Qwen2.5-Instruct 1.5B (WebGPU via WebLLM/MLC).
-
-[] Define prompt templates:
-
-Hints generation (scoped to lesson context)
-
-Option explanations (why correct/incorrect)
-
-Self-evaluation rubric (score clarity, correctness)
-
-[] Routing: WebGPU local → optional Ollama http://localhost:11434 → optional free web search (Phase 6).
-
-[] Model asset management: progressive download, cache, version pin.
-
-P3.2 Guardrails & Determinism
-
-[] Retrieval-first: prefer snippets from packages/data before generative.
-
-[] Length & temperature caps; stop sequences.
-
-[] Safety classifier for off-topic generations.
-
-P3.3 packages/speech
-
-[] ASR adapters: whisper.cpp (tiny/base) or Vosk (browser/Android paths).
-
-[] TTS adapters: Piper (local) + Web Speech API fallback.
-
-[] Voice settings: rate, pitch, language.
-
-[] Offline packaging notes & lazy init.
-
-P3.4 QA
-
-[] Latency budget tests (ASR <1.5s, explanation <2s on mid-range laptop).
-
-[] Deterministic snapshot tests for prompts with fixed seeds.
+[x] `GET /api/tracks`, `GET /api/sessions/:trackId`, `POST /api/attempts` backed by `@pylearn/core`'s `startSession`/`submitAnswer`/`getSummary`.
 
 Acceptance Tests
 
-[] Given a quiz question with 3 options, LLM returns per-option: reason-correct + reason-incorrect.
+[x] `pylearn.aysentra.com/api/health` returns 200 through the full nginx → api → (no DB dependency) path.
 
-[] End-to-end: user speaks answer → ASR → evaluation → TTS explanation.
+[x] Session/attempt endpoints round-trip through Postgres end to end (verified via curl before frontend wiring).
 
-Phase 4 — Web App (PWA, Offline-First)
+Phase 4 — Accounts & Sessions (Google OAuth)
 
 Exit Criteria
 
-Installable PWA with offline cache, local DB, and complete “Python Basics”.
+A real Google account can sign in, complete a lesson, close the browser, open a different browser, sign in again, and see the same progress.
 
 Checklists
 
-P4.1 App Shell
+P4.1 Backend
 
-[] React + Vite + TS app in apps/web.
+[x] Server-side OAuth Authorization Code flow: `/api/auth/google/start`, `/api/auth/google/callback`, `/api/auth/me`, `/api/auth/logout`.
 
-[] Routes: Home, Tracks, Lesson, Review, Settings, About.
+[x] `users` upsert keyed by Google `sub`; DB-backed session via signed, httpOnly, `SameSite=Lax` cookie.
 
-[] Service worker + offline caching strategy (workbox or manual).
+[] One-time manual step (outside this repo): create a Google Cloud OAuth Client ID/Secret and set `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` in the server `.env` — everything else is automated and already coded.
 
-[] IndexedDB schema for progress & telemetry.
+P4.2 Frontend
 
-[] First-run model flow: Pick tiny/small pack; show estimated size + disk cache location.
+[x] `Login.tsx` route with "Sign in with Google" entry point, inert with a clear message when Google isn't configured yet.
 
-[] Fallbacks: If no WebGPU → CPU warn + allow “Use Ollama” if detected.
+[x] `state/store.tsx` auth-aware branch: signed-in users sync via `lib/api.ts` against the server; anonymous users keep the pre-existing IndexedDB-only path unchanged.
 
-[] Privacy page: Clarify on-device inference and optional Ollama usage.
-
-P4.2 Lesson Player
-
-[] Integrate core engine & ui-kit components.
-
-[] “Teacher Mode” triggers checkpoints automatically.
-
-[] CodeCell sandbox (safe eval, timeouts, blocked APIs).
-
-[] Stuck flow → hints → reveal → micro-lesson.
-
-P4.3 Voice UX
-
-[] Mic permission handling; VU meter; retry prompts.
-
-[] TTS queueing (no overlap).
-
-[] Settings page: voice, model size, offline packs.
-
-P4.4 Content
-
-[] Complete “Python Basics” (≥ 10 lessons, 2–3 checkpoints each).
-
-[] Explanations per option (explicit right/wrong).
-
-P4.5 PWA Polish
-
-[] Icons & manifest; install banner.
-
-[] First-run model download flow with size options (tiny / small / medium).
-
-[] Low-power mode toggle.
+[] Settings/Account polish (avatar, "sign out everywhere").
 
 Acceptance Tests
 
-[] Works fully offline after first run.
+[x] Unauthenticated requests to `/api/sessions/*` and `/api/attempts` return 401.
 
-[] Progress persists across reloads; streaks computed.
+[] Cross-browser sign-in round-trip verified once Google credentials are supplied.
+
+Phase 5 — LLM-Proxy & Guardrailed Generation
+
+Exit Criteria
+
+Hint/quiz text can be AI-augmented without ever depending on a paid cloud API, and without degrading UX when the local model is busy or unavailable.
+
+Checklists
+
+P5.1 Tiered Generation (cheapest/most-reliable first)
+
+[x] Tier 1 — cache: `llm_generations` table serves previously generated content for a checkpoint+task before anything is generated live.
+
+[x] Tier 2 — local Ollama (`llama3.2:3b`), concurrency-capped to 1 in-flight request with a short timeout, reachable via the host's existing Ollama install (no new model download).
+
+[x] Tier 3 — optional cloud overflow (NVIDIA NIM free tier), off by default via `LLM_OVERFLOW_ENABLED`, never on the hot path unless explicitly turned on.
+
+[x] Tier 4 — deterministic template fallback: the lesson's own authored `hints`/`explanation` text, used whenever tiers 1-3 miss or fail.
+
+[x] Grounding check: live-generated output must reference terms from the checkpoint/prompt before being trusted; ungrounded output is discarded in favor of the template.
+
+[x] `POST /api/llm/hint` shipped as the first (narrowest) endpoint end-to-end.
+
+[] `POST /api/llm/scenario` (quiz rewording) and `POST /api/llm/rationale` (option explanation polish) — same policy module, not yet exposed as routes.
+
+P5.2 Guardrails & Determinism
+
+[x] Retrieval-first: prefer curated `packages/data` content before generative augmentation; checkpoint correctness evaluation stays 100% deterministic (`packages/core`), never delegated to the LLM.
+
+[x] Length & temperature caps (`num_predict`/`temperature` on the Ollama request, `max_tokens`/`temperature` on the NVIDIA NIM request).
+
+[] Dedicated safety/off-topic classifier beyond the current keyword-grounding check.
+
+Acceptance Tests
+
+[x] `/api/llm/hint` returns usable content with Ollama running (real generation, cached for next time) and with Ollama stopped (falls back to the authored template) — both paths verified.
+
+[] Frontend lesson player surfaces AI-augmented hints as an enrichment on top of, never a replacement for, the curated hint text.
+
+Phase 6 — Web Product Polish
+
+Exit Criteria
+
+Mobile-browser-first responsive product with full "Python Basics" content, ready for external users.
+
+Checklists
+
+[] Mobile-browser-first responsive pass (primary target per product direction).
+
+[] PWA install/offline-cache retained as a convenience feature, not the core pitch.
+
+[] Complete "Python Basics" (≥ 10 lessons, 2–3 checkpoints each).
 
 [] A11y pass: keyboard, focus, captions.
 
-Phase 5 — Android App (Reuse Core)
-
-Exit Criteria
-
-Android app reaches feature parity for “Python Basics” with local voice.
-
-Checklists
-
-P5.1 Shell & Reuse
-
-[] React Native (Expo) app in apps/android.
-
-[] Share packages/core, ui-kit, llm, speech as much as possible.
-
-[] Native storage (SQLite/AsyncStorage) mapping.
-
-[] Model download manager: Pause/resume, Wi-Fi-only option.
-
-[] LAN Ollama (optional): Advanced setting with IP allowlist + TLS warning.
-
-P5.2 Voice
-
-[] Android ASR fallback (Vosk).
-
-[] Android TTS (Piper/native).
-
-[] Mic permission flows and UX parity.
-
-P5.3 Model & Assets
-
-[] On-first-run model download & cache.
-
-[] Asset size gating (≤120MB base APK; models external).
+[] Privacy page describing what's stored server-side (Postgres, tied to your Google account) vs. locally (anonymous/offline mode), and that hints are generated by a small self-hosted model, not a third-party cloud AI.
 
 Acceptance Tests
 
-[] Fresh device install → download minimal model → run first lesson offline.
+[] Fresh signed-in session on a phone browser completes a full lesson without layout issues.
 
-[] Feature parity with web MVP across 3 sessions.
+[] Progress persists across devices for signed-in users; persists across reloads for anonymous users.
 
-Phase 6 — Adaptive Expansion & Free Web Search Assist
+Phase 7 — Adaptive Expansion
 
 Exit Criteria
 
-Spaced repetition & curated external materials (no paid APIs) with local self-evaluation.
+Spaced repetition and mastery-driven review sessions.
 
 Checklists
-
-P6.1 Adaptivity
 
 [] Skill estimation with confidence; decay on inactivity.
 
 [] Review sessions auto-generated; spaced intervals.
 
-P6.2 Free Web Search (Optional)
-
-[] Search adapter (e.g., anonymous GET to public endpoints or scraping free sources you permit).
-
-[] On-device filtering by topic; cite sources visibly.
-
-[] Self-evaluation rubric to gate inclusion (reject low-score content).
+[] (Parked, not deleted) Free web search assist for supplementary material — revisit only if curriculum breadth becomes a real gap; out of scope for the current pivot.
 
 Acceptance Tests
 
-[] Measurable improvement: fewer hints needed across sessions (local analytics).
+[] Measurable improvement: fewer hints needed across sessions (aggregate, privacy-respecting analytics).
 
-[] Sources shown with links; toggle to disable search globally.
-
-Phase 7 — Privacy, Export/Import, Polish
+Phase 8 — Native Mobile App (Play Store) — Separate Stack, Later
 
 Exit Criteria
 
-Strong privacy defaults, export/import workflow, accessibility polish.
+Not defined yet — this phase is explicitly scoped as "not now, not blocking the web launch."
 
-Checklists
+Notes
 
-P7.1 Privacy
-
-[] Local-first ON by default; no telemetry leaves device.
-
-[] Clear privacy page in app.
-
-P7.2 Export/Import
-
-[] Encrypted export to file (password-protected).
-
-[] Import with conflict resolution.
-
-P7.3 A11y & UX
-
-[] High-contrast theme; text scaling.
-
-[] Screen reader labels for all controls.
-
-Acceptance Tests
-
-[] Export/import round-trip reproduces mastery & progress.
-
-[] A11y audit checklist passes.
+This is React Native _or_ native Kotlin/Swift, consuming `apps/api`'s HTTP contract (`/api/sessions`, `/api/attempts`, `/api/llm/*`) like any other REST client. It is **not** a WebView wrapper around `apps/web`, and does not assume DOM/browser APIs are available. Only `@pylearn/core`'s pure domain logic and the `apps/api` HTTP contract are shared with this phase — `packages/ui-kit` (React DOM components) is not reused here. This corrects the original plan's assumption that Android would be a thin React Native wrapper reusing browser-shaped code.
 
 Cross-Cutting: Performance & Size Targets
 
-[] Web initial bundle ≤ 20MB (excluding models).
+[] Web initial bundle ≤ 20MB (excluding any optional model assets).
 
-[] Model packs: tiny (~300–700MB), small (~1–1.5GB), medium (~2–3GB).
+[] `/api/llm/*` response p95 < 3s on the shared host (replaces the old browser-downloaded-model-size targets, since generation now happens server-side).
 
-[] Android base APK/AAB ≤ 120MB; model packs external.
-
-[] ASR < 1.5s, explanation < 2.0s typical desktop.
+[] ASR < 1.5s, explanation < 2.0s typical desktop (deferred until Phase 5's speech work resumes).
 
 Definition of Ready (DoR)
 
@@ -428,7 +343,7 @@ Issue Boilerplates (copy into GitHub)
 Feature
 
 Title: [Feature] <short>
-Labels: type:feat, area:<core|ui|...>, phase:X, prio:P2
+Labels: type:feat, area:<core|ui|api|...>, phase:X, prio:P2
 
 Goal
 
@@ -457,20 +372,20 @@ Tasks
 
 Risks & Mitigations
 
-Model size vs. latency → tiered packs, lazy load, configurable quality.
+Shared-host resource contention: the LLM host also runs a k3s cluster, other docker projects, and the developer's own daily-driver workload — mitigated by the cache-first tiered generation design (Phase 5) and a hard concurrency cap on live Ollama calls, so traffic growth doesn't compete with foreground work.
 
-Browser GPU variance → CPU fallback + optional Ollama local backend.
+Postgres operational cost vs. SQLite: accepted for now given multi-user relational needs (foreign keys, concurrent writers); revisit if operational simplicity becomes more valuable than concurrency at low user counts.
 
-ASR accuracy on low-end devices → allow text fallback quickly.
+Google OAuth "Testing" consent screen status caps sign-in to an explicit allow-list (~100 users) until verification is requested — fine for early access, needs addressing before a fully public launch.
 
-Content throughput → schema + lint + templates to parallelize authoring.
+Content throughput → schema + lint + templates to parallelize authoring (unchanged from the original plan).
+
+Mastery model is new and untuned — watch real user mastery numbers after Phase 4 ships for anything that looks obviously wrong before leaning on it for adaptive features in Phase 7.
 
 Suggested Milestones
 
-M1 (Web Alpha): Phases 0–3.
-
-M2 (Web Beta): Phase 4 with “Python Basics”.
-
-M3 (Android Beta): Phase 5 parity.
-
-M4 (1.0): Phases 6–7 polish.
+M1 (Backend + Accounts Alpha): Phases 0–4.
+M2 (AI-Augmented Beta): Phase 5.
+M3 (Public Web Launch): Phase 6.
+M4 (Adaptive 1.0): Phase 7.
+M5 (Native Mobile): Phase 8, scoped independently once M3/M4 are stable.
