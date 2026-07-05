@@ -1,3 +1,4 @@
+import { updateMastery } from './mastery';
 import { scoreAttempt } from './scoring';
 import {
   Attempt,
@@ -70,10 +71,7 @@ export function submitAnswer(
   recordedAttempt.score = scoreAttempt(recordedAttempt);
 
   const updatedAttempts = [...session.attempts, recordedAttempt];
-  const updatedMastery: Mastery = {
-    ...session.mastery,
-    updatedAt: Date.now(),
-  };
+  const updatedMastery: Mastery = updateMastery(session.mastery, recordedAttempt);
 
   const updatedSession: SessionState = {
     ...session,

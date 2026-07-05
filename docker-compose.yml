@@ -1,0 +1,46 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: pylearn-web:latest
+    restart: unless-stopped
+    ports:
+      - '5180:8080'
+    depends_on:
+      - api
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    image: pylearn-api:latest
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgres://pylearn:pylearn@db:5432/pylearn
+      OLLAMA_BASE_URL: http://host.docker.internal:11434
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: pylearn
+      POSTGRES_PASSWORD: pylearn
+      POSTGRES_DB: pylearn
+    volumes:
+      - pylearn_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U pylearn']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  pylearn_db_data:

@@ -1,0 +1,28 @@
+{
+  "name": "@pylearn/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "bundle": "esbuild src/index.ts --bundle --platform=node --format=esm --target=node20 --outfile=dist/index.js --packages=external --tsconfig=tsconfig.json",
+    "build": "pnpm run typecheck && pnpm run bundle",
+    "dev": "pnpm run bundle && node --watch dist/index.js",
+    "start": "pnpm run bundle && node dist/index.js",
+    "migrate": "tsx src/db/migrate.ts"
+  },
+  "dependencies": {
+    "@fastify/cookie": "^9.4.0",
+    "dotenv": "^16.4.5",
+    "drizzle-orm": "^0.33.0",
+    "fastify": "^4.28.1",
+    "postgres": "^3.4.4",
+    "tsx": "^4.20.6",
+    "undici": "^6.19.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "esbuild": "^0.28.1",
+    "typescript": "^5.6.0"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "types": ["node"],
+    "baseUrl": ".",
+    "paths": {
+      "@pylearn/core": ["../../packages/core/src"],
+      "@pylearn/core/*": ["../../packages/core/src/*"],
+      "@pylearn/data": ["../../packages/data"],
+      "@pylearn/data/*": ["../../packages/data/*"],
+      "@pylearn/llm": ["../../packages/llm/src"],
+      "@pylearn/llm/*": ["../../packages/llm/src/*"]
+    },
+    "noEmit": true
+  },
+  "include": ["src"]
+}
