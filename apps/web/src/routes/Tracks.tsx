@@ -1,12 +1,15 @@
 import type { ReactElement } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 import { useAppStore } from '../state/store';
 
+import { computeCurrentStreak } from '@pylearn/core';
 import type { Lesson, Module } from '@pylearn/core';
+import { LessonCard, StreakChip } from '@pylearn/ui-kit';
 
 export function Tracks(): ReactElement {
-  const { track, loading, error, attempts, setActiveLesson } = useAppStore();
+  const navigate = useNavigate();
+  const { track, loading, error, attempts, session, summary, setActiveLesson } = useAppStore();
 
   if (loading) {
     return (
@@ -44,13 +47,31 @@ export function Tracks(): ReactElement {
     return count + moduleTotal;
   }, 0);
 
+  const attemptedCheckpointIds = new Set(attempts.map((attempt) => attempt.checkpointId));
+  const lessonProgress = (lesson: Lesson): number => {
+    if (lesson.checkpoints.length === 0) return 0;
+    const done = lesson.checkpoints.filter((checkpoint) =>
+      attemptedCheckpointIds.has(checkpoint.id),
+    ).length;
+    return Math.round((done / lesson.checkpoints.length) * 100);
+  };
+
+  const handleSelectLesson = (lessonId: string) => {
+    setActiveLesson(lessonId);
+    navigate(`/lesson/${lessonId}`);
+  };
+
   return (
     <div className="space-y-6">
       <div className="card mx-auto max-w-4xl space-y-3 p-6">
-        <h2 className="text-2xl font-semibold text-white">{track.title}</h2>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-2xl font-semibold text-white">{track.title}</h2>
+          <StreakChip streakCount={computeCurrentStreak(attempts)} />
+        </div>
         <p className="text-sm text-slate-300">{track.summary}</p>
         <p className="text-xs uppercase tracking-wide text-slate-500">
-          Checkpoints completed: {attempts.length} / {totalCheckpoints}
+          Checkpoints completed: {attempts.length} / {totalCheckpoints} · Overall mastery:{' '}
+          {summary?.mastery.overallPercent ?? 0}%
         </p>
       </div>
 
@@ -62,21 +83,16 @@ export function Tracks(): ReactElement {
           </header>
           <ul className="space-y-3">
             {module.lessons.map((lesson) => (
-              <li
-                key={lesson.id}
-                className="flex items-center justify-between rounded-lg border border-slate-800 bg-slate-900/60 px-4 py-3"
-              >
-                <div>
-                  <p className="text-sm font-medium text-white">{lesson.title}</p>
-                  <p className="text-xs text-slate-400">{lesson.summary}</p>
-                </div>
-                <Link
-                  to={`/lesson/${lesson.id}`}
-                  onClick={() => setActiveLesson(lesson.id)}
-                  className="btn btn-secondary"
-                >
-                  Start lesson
-                </Link>
+              <li key={lesson.id}>
+                <LessonCard
+                  lessonId={lesson.id}
+                  title={lesson.title}
+                  summary={lesson.summary}
+                  durationMinutes={lesson.durationMinutes}
+                  progressPercent={lessonProgress(lesson)}
+                  isActive={session?.currentLessonId === lesson.id}
+                  onSelectLesson={handleSelectLesson}
+                />
               </li>
             ))}
           </ul>

@@ -12,17 +12,17 @@ export interface ResultExplainerProps extends Omit<HTMLAttributes<HTMLDivElement
 
 /**
  * Display the rationale behind an evaluated attempt for the learner.
- * @todo TODO(impl): Replace placeholder markup with structured explanation UI.
  */
 export function ResultExplainer({
   checkpointId,
-  lessonId: _lessonId,
+  lessonId,
   isCorrect,
   explanation,
   hintsUsed,
   durationSeconds,
   onReviewLesson,
   onClick,
+  className,
   'aria-label': ariaLabel,
   ...rest
 }: ResultExplainerProps): ReactElement {
@@ -32,7 +32,7 @@ export function ResultExplainer({
       role="status"
       data-component="ResultExplainer"
       data-checkpoint-id={checkpointId}
-      data-lesson-id={_lessonId}
+      data-lesson-id={lessonId}
       data-correct={isCorrect}
       data-hints-used={hintsUsed}
       data-duration={durationSeconds ?? undefined}
@@ -41,11 +41,24 @@ export function ResultExplainer({
       onClick={(event) => {
         onClick?.(event);
         if (!event.defaultPrevented) {
-          onReviewLesson?.(_lessonId);
+          onReviewLesson?.(lessonId);
         }
       }}
+      className={`space-y-1 rounded-md border px-4 py-3 text-sm ${
+        isCorrect
+          ? 'border-emerald-500/30 bg-emerald-900/20 text-emerald-100'
+          : 'border-red-500/30 bg-red-900/20 text-red-100'
+      } ${onReviewLesson ? 'cursor-pointer' : ''} ${className ?? ''}`}
     >
-      {isCorrect ? 'Correct' : 'Incorrect'} — {explanation}
+      <p className="font-medium">
+        {isCorrect ? '✅ Correct' : '❌ Incorrect'} · {lessonId} / {checkpointId}
+      </p>
+      <p className="text-slate-200/90">{explanation}</p>
+      {hintsUsed > 0 ? (
+        <p className="text-xs text-slate-400">
+          {hintsUsed} hint{hintsUsed === 1 ? '' : 's'} used
+        </p>
+      ) : null}
     </div>
   );
 }

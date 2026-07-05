@@ -3,9 +3,12 @@ import { Link, useNavigate } from 'react-router-dom';
 
 import { useAppStore } from '../state/store';
 
+import { computeCurrentStreak } from '@pylearn/core';
+import { StreakChip } from '@pylearn/ui-kit';
+
 export function Home(): ReactElement {
   const navigate = useNavigate();
-  const { loading, error, session, currentLesson, setActiveLesson } = useAppStore();
+  const { loading, error, session, currentLesson, summary, setActiveLesson } = useAppStore();
 
   if (loading) {
     return (
@@ -58,10 +61,14 @@ export function Home(): ReactElement {
       </div>
 
       {session && session.attempts.length > 0 ? (
-        <div className="card mx-auto max-w-3xl p-6">
-          <h3 className="text-lg font-semibold text-white">Recent Activity</h3>
-          <p className="mt-2 text-sm text-slate-300">
-            Attempts logged: {session.attempts.length} · Last checkpoint:{' '}
+        <div className="card mx-auto max-w-3xl space-y-3 p-6">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h3 className="text-lg font-semibold text-white">Recent Activity</h3>
+            <StreakChip streakCount={computeCurrentStreak(session.attempts)} />
+          </div>
+          <p className="text-sm text-slate-300">
+            Attempts logged: {session.attempts.length} · Overall mastery:{' '}
+            {summary?.mastery.overallPercent ?? 0}% · Last checkpoint:{' '}
             {session.attempts[session.attempts.length - 1]?.checkpointId ?? 'n/a'}
           </p>
         </div>

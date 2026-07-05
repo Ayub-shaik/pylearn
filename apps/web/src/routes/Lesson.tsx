@@ -2,11 +2,13 @@ import { useEffect, useMemo, useState } from 'react';
 import type { ReactElement } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
+import { requestHint } from '../lib/api';
 import { useAppStore } from '../state/store';
 
 import { advanceHintLevel, hintUsageCount } from '@pylearn/core';
 import type {
   Checkpoint,
+  HintLevel,
   HintStage,
   Lesson as LessonType,
   SubmissionFeedback,
@@ -19,12 +21,24 @@ interface LocalFeedback {
   raw: SubmissionFeedback;
 }
 
+interface AiHint {
+  content: string;
+  provider: string;
+}
+
+const HINT_LEVELS: HintLevel[] = ['H0', 'H1', 'H2'];
+
+function isHintLevel(level: HintStage | null): level is HintLevel {
+  return level !== null && (HINT_LEVELS as HintStage[]).includes(level);
+}
+
 export function Lesson(): ReactElement {
   const { lessonId } = useParams<{ lessonId: string }>();
   const {
     track,
     loading,
     error,
+    authStatus,
     currentLesson,
     currentCheckpoint,
     submitAttempt,
@@ -37,6 +51,7 @@ export function Lesson(): ReactElement {
   const [codeValue, setCodeValue] = useState('');
   const [hintStage, setHintStage] = useState<HintStage | null>(null);
   const [feedback, setFeedback] = useState<LocalFeedback | null>(null);
+  const [aiHints, setAiHints] = useState<Partial<Record<HintLevel, AiHint>>>({});
 
   useEffect(() => {
     if (currentCheckpoint?.type === 'code-cell') {
@@ -48,6 +63,7 @@ export function Lesson(): ReactElement {
     setFillValue('');
     setHintStage(null);
     setFeedback(null);
+    setAiHints({});
   }, [currentCheckpoint?.id]);
 
   const lesson = useMemo(() => {
@@ -59,6 +75,39 @@ export function Lesson(): ReactElement {
     }
     return undefined;
   }, [currentLesson, lessonId, track]);
+
+  useEffect(() => {
+    if (
+      authStatus !== 'authenticated' ||
+      !track ||
+      !lesson ||
+      !currentCheckpoint ||
+      !isHintLevel(hintStage) ||
+      aiHints[hintStage]
+    ) {
+      return;
+    }
+
+    let cancelled = false;
+    requestHint({
+      trackId: track.id,
+      lessonId: lesson.id,
+      checkpointId: currentCheckpoint.id,
+      level: hintStage,
+    })
+      .then((response) => {
+        if (!cancelled) {
+          setAiHints((prev) => ({ ...prev, [hintStage]: response }));
+        }
+      })
+      .catch(() => {
+        // Silent fallback to the authored static hint text already shown.
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [authStatus, track, lesson, currentCheckpoint, hintStage, aiHints]);
 
   const totalCheckpoints = track
     ? track.modules.reduce(
@@ -207,15 +256,24 @@ export function Lesson(): ReactElement {
           </header>
 
           {currentCheckpoint.hints || revealText ? (
-            <HintPanel
-              h0={currentCheckpoint.hints?.H0}
-              h1={currentCheckpoint.hints?.H1}
-              h2={currentCheckpoint.hints?.H2}
-              revealedAnswerText={revealText}
-              level={hintStage}
-              disabled={Boolean(feedback)}
-              onNextLevel={handleHintAdvance}
-            />
+            <div className="space-y-1">
+              <HintPanel
+                h0={aiHints.H0?.content ?? currentCheckpoint.hints?.H0}
+                h1={aiHints.H1?.content ?? currentCheckpoint.hints?.H1}
+                h2={aiHints.H2?.content ?? currentCheckpoint.hints?.H2}
+                revealedAnswerText={revealText}
+                level={hintStage}
+                disabled={Boolean(feedback)}
+                onNextLevel={handleHintAdvance}
+              />
+              {isHintLevel(hintStage) &&
+              aiHints[hintStage] &&
+              aiHints[hintStage]?.provider !== 'template' ? (
+                <p className="text-xs text-slate-500">
+                  Rephrased by our AI tutor ({aiHints[hintStage]?.provider})
+                </p>
+              ) : null}
+            </div>
           ) : null}
 
           <CheckpointContent

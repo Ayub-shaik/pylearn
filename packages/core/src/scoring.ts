@@ -25,3 +25,15 @@ export function applyRevealPenalty(score: number, level: HintStage | null | unde
   const penalty = penalties[level] ?? 0;
   return Math.max(0, score - penalty);
 }
+
+/**
+ * Count consecutive correct attempts ending at the most recent attempt.
+ */
+export function computeCurrentStreak(attempts: Attempt[]): number {
+  let streak = 0;
+  for (let i = attempts.length - 1; i >= 0; i -= 1) {
+    if (!attempts[i].isCorrect) break;
+    streak += 1;
+  }
+  return streak;
+}

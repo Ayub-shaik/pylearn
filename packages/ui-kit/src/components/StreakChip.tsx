@@ -8,13 +8,13 @@ export interface StreakChipProps extends Omit<HTMLAttributes<HTMLDivElement>, 'c
 
 /**
  * Highlight the learner's current streak in a compact badge.
- * @todo TODO(impl): Replace placeholder markup with styled chip UI.
  */
 export function StreakChip({
-  streakCount: _streakCount,
+  streakCount,
   isActive,
   onActivate,
   onClick,
+  className,
   'aria-label': ariaLabel,
   ...rest
 }: StreakChipProps): ReactElement {
@@ -24,18 +24,24 @@ export function StreakChip({
       role="button"
       tabIndex={0}
       data-component="StreakChip"
-      data-streak-count={_streakCount}
+      data-streak-count={streakCount}
       data-active={isActive ?? false}
       aria-pressed={isActive ?? false}
-      aria-label={ariaLabel ?? `Streak ${_streakCount}`}
+      aria-label={ariaLabel ?? `Streak ${streakCount}`}
       onClick={(event) => {
         onClick?.(event);
         if (!event.defaultPrevented) {
-          onActivate?.(_streakCount);
+          onActivate?.(streakCount);
         }
       }}
+      className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors duration-150 ${
+        streakCount > 0
+          ? 'border-amber-500/40 bg-amber-500/10 text-amber-300'
+          : 'border-slate-800 bg-slate-900/60 text-slate-400'
+      } ${className ?? ''}`}
     >
-      Streak {_streakCount}
+      <span aria-hidden="true">🔥</span>
+      {streakCount} streak
     </div>
   );
 }

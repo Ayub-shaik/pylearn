@@ -1,14 +1,5 @@
-const CACHE_NAME = 'pylearn-shell-v1';
-const PRECACHE_URLS = [
-  '/',
-  '/index.html',
-  '/manifest.webmanifest',
-  '/icons/icon.svg',
-  '/content/python-basics/track.json',
-  '/content/python-basics/module-intro.json',
-  '/content/python-basics/lesson-001-variables.json',
-  '/content/python-basics/lesson-002-types.json',
-];
+const CACHE_NAME = 'pylearn-shell-v2';
+const PRECACHE_URLS = ['/manifest.webmanifest', '/icons/icon.svg'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -32,10 +23,33 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   const { request } = event;
-  if (request.method !== 'GET' || new URL(request.url).origin !== self.location.origin) {
+  const url = new URL(request.url);
+
+  if (request.method !== 'GET' || url.origin !== self.location.origin) {
     return;
   }
 
+  // Never intercept API calls — auth/session state must always hit the network.
+  if (url.pathname.startsWith('/api/')) {
+    return;
+  }
+
+  // HTML shell and lesson content: network-first, so new deploys and content
+  // edits are visible immediately. Cache is only an offline fallback.
+  if (request.mode === 'navigate' || url.pathname.endsWith('.json')) {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+          return response;
+        })
+        .catch(() => caches.match(request)),
+    );
+    return;
+  }
+
+  // Hashed static assets: cache-first is safe since filenames change with content.
   event.respondWith(
     caches.match(request).then((cached) => {
       if (cached) {
