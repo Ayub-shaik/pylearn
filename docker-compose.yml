@@ -19,8 +19,10 @@ services:
     env_file:
       - .env
     environment:
+      # Fixed by this compose file's own network topology, not meant to be
+      # overridden via .env. OLLAMA_BASE_URL is intentionally NOT hardcoded
+      # here — it comes from .env so it stays actually configurable.
       DATABASE_URL: postgres://pylearn:pylearn@db:5432/pylearn
-      OLLAMA_BASE_URL: http://host.docker.internal:11434
     extra_hosts:
       - 'host.docker.internal:host-gateway'
     depends_on:
