@@ -3,6 +3,8 @@ import type { ReactElement, HTMLAttributes } from 'react';
 export interface ResultExplainerProps extends Omit<HTMLAttributes<HTMLDivElement>, 'children'> {
   checkpointId: string;
   lessonId: string;
+  /** Human-readable label shown instead of the raw lessonId/checkpointId, when known. */
+  displayLabel?: string;
   isCorrect: boolean;
   explanation: string;
   hintsUsed: number;
@@ -16,6 +18,7 @@ export interface ResultExplainerProps extends Omit<HTMLAttributes<HTMLDivElement
 export function ResultExplainer({
   checkpointId,
   lessonId,
+  displayLabel,
   isCorrect,
   explanation,
   hintsUsed,
@@ -51,7 +54,8 @@ export function ResultExplainer({
       } ${onReviewLesson ? 'cursor-pointer' : ''} ${className ?? ''}`}
     >
       <p className="font-medium">
-        {isCorrect ? '✅ Correct' : '❌ Incorrect'} · {lessonId} / {checkpointId}
+        {isCorrect ? '✅ Correct' : '❌ Incorrect'} ·{' '}
+        {displayLabel ?? `${lessonId} / ${checkpointId}`}
       </p>
       <p className="text-slate-200/90">{explanation}</p>
       {hintsUsed > 0 ? (

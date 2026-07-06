@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 import { Spinner } from '../lib/Spinner';
 import { useAppStore } from '../state/store';
@@ -9,7 +9,8 @@ import type { Attempt, Checkpoint, Track } from '@pylearn/core';
 import { ResultExplainer, StreakChip } from '@pylearn/ui-kit';
 
 export function Review(): ReactElement {
-  const { loading, error, track, summary, attempts } = useAppStore();
+  const navigate = useNavigate();
+  const { loading, error, track, summary, attempts, setActiveLesson } = useAppStore();
 
   if (loading) {
     return (
@@ -69,22 +70,37 @@ export function Review(): ReactElement {
             <p className="text-sm text-slate-300">No attempts logged so far.</p>
           </div>
         ) : (
-          [...attempts]
-            .reverse()
-            .map((attempt) => (
-              <ResultExplainer
-                key={`${attempt.lessonId}-${attempt.checkpointId}-${attempt.timestamp}`}
-                checkpointId={attempt.checkpointId}
-                lessonId={attempt.lessonId}
-                isCorrect={attempt.isCorrect}
-                explanation={explainAttempt(track, attempt)}
-                hintsUsed={attempt.revealsUsed}
-              />
-            ))
+          [...attempts].reverse().map((attempt) => (
+            <ResultExplainer
+              key={`${attempt.lessonId}-${attempt.checkpointId}-${attempt.timestamp}`}
+              checkpointId={attempt.checkpointId}
+              lessonId={attempt.lessonId}
+              displayLabel={displayLabelForAttempt(track, attempt)}
+              isCorrect={attempt.isCorrect}
+              explanation={explainAttempt(track, attempt)}
+              hintsUsed={attempt.revealsUsed}
+              onReviewLesson={(lessonId) => {
+                void setActiveLesson(lessonId);
+                navigate(`/lesson/${lessonId}`);
+              }}
+            />
+          ))
         )}
       </div>
     </div>
   );
+}
+
+function displayLabelForAttempt(track: Track, attempt: Attempt): string {
+  const lesson = track.modules
+    .flatMap((module) => module.lessons)
+    .find((candidate) => candidate.id === attempt.lessonId);
+  const checkpoint = resolveCheckpoint(track, {
+    lessonId: attempt.lessonId,
+    checkpointId: attempt.checkpointId,
+  });
+  if (!lesson || !checkpoint) return `${attempt.lessonId} / ${attempt.checkpointId}`;
+  return `${lesson.title} — ${checkpoint.title}`;
 }
 
 function explainAttempt(track: Track, attempt: Attempt): string {
