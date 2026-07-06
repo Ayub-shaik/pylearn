@@ -88,6 +88,24 @@ export function Settings() {
             </button>
           )}
         </section>
+
+        {authStatus !== 'authenticated' ? (
+          <section
+            aria-labelledby="test-session"
+            className="space-y-2 border-t border-slate-800 pt-4"
+          >
+            <h3 id="test-session" className="text-lg font-semibold text-white">
+              Testing: always-fresh URL
+            </h3>
+            <p className="text-sm text-slate-400">
+              Bookmark this URL — loading or hard-refreshing it wipes local progress first, every
+              time, so you always land as a brand new visitor:
+            </p>
+            <code className="block break-all rounded-md bg-slate-950 px-3 py-2 text-xs text-primary-light">
+              {typeof window !== 'undefined' ? `${window.location.origin}/?fresh=1` : '/?fresh=1'}
+            </code>
+          </section>
+        ) : null}
       </div>
     </div>
   );

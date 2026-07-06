@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import type { ReactElement } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -5,13 +6,35 @@ import { loadLocalOnboarding } from '../lib/onboarding';
 import { Spinner } from '../lib/Spinner';
 import { useAppStore } from '../state/store';
 
-import { computeCurrentStreak } from '@pylearn/core';
-import { StreakChip } from '@pylearn/ui-kit';
+import { buildRoadmapView, computeCurrentStreak } from '@pylearn/core';
+import type { RoadmapModuleView } from '@pylearn/core';
+import { ProgressRing, StreakChip } from '@pylearn/ui-kit';
+
+const MODULE_ICON: Record<RoadmapModuleView['status'], string> = {
+  completed: '✔',
+  current: '▶',
+  locked: '🔒',
+  available: '📘',
+};
 
 export function Home(): ReactElement {
   const navigate = useNavigate();
-  const { loading, error, session, currentLesson, summary, authStatus, user, setActiveLesson } =
-    useAppStore();
+  const {
+    loading,
+    error,
+    session,
+    currentLesson,
+    summary,
+    authStatus,
+    user,
+    setActiveLesson,
+    track,
+  } = useAppStore();
+
+  const roadmap = useMemo(() => {
+    if (!track || !session) return undefined;
+    return buildRoadmapView(track, session);
+  }, [track, session]);
 
   if (loading) {
     return (
@@ -122,8 +145,11 @@ export function Home(): ReactElement {
     <div className="space-y-6">
       <div className="card mx-auto max-w-3xl space-y-4 p-6">
         <header className="space-y-2">
-          <h2 className="text-2xl font-semibold text-white">Welcome to PyLearn</h2>
-          <p className="text-sm text-slate-300">Pick up a lesson or continue where you left off.</p>
+          <h2 className="text-2xl font-semibold text-white">Welcome back to PyLearn</h2>
+          <p className="text-sm text-slate-300">
+            You're learning Python through hands-on checkpoints, not passive reading. Pick up a
+            lesson, continue where you left off, or see the full roadmap below.
+          </p>
         </header>
         <div className="flex flex-wrap gap-3">
           <Link to="/tracks" className="btn btn-primary">
@@ -136,6 +162,35 @@ export function Home(): ReactElement {
           ) : null}
         </div>
       </div>
+
+      {roadmap ? (
+        <div className="card mx-auto max-w-3xl space-y-4 p-6">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <h3 className="text-lg font-semibold text-white">Your Python roadmap</h3>
+              <p className="text-sm text-slate-400">{roadmap.track.title}</p>
+            </div>
+            <ProgressRing value={roadmap.overallProgressPercent} max={100} size={48} />
+          </div>
+          <ul className="space-y-2">
+            {roadmap.modules.map((moduleView) => (
+              <li
+                key={moduleView.module.id}
+                className="flex items-center justify-between gap-3 rounded-md border border-slate-800 bg-slate-900/60 px-3 py-2 text-sm"
+              >
+                <span className="flex items-center gap-2 text-slate-200">
+                  <span aria-hidden="true">{MODULE_ICON[moduleView.status]}</span>
+                  {moduleView.module.title}
+                </span>
+                <span className="text-xs text-slate-400">{moduleView.progressPercent}%</span>
+              </li>
+            ))}
+          </ul>
+          <Link to="/tracks" className="text-sm text-primary-light underline">
+            View full roadmap →
+          </Link>
+        </div>
+      ) : null}
 
       {session && session.attempts.length > 0 ? (
         <div className="card mx-auto max-w-3xl space-y-3 p-6">

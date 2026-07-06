@@ -10,8 +10,8 @@ import {
   resetModuleRemote,
   submitAttemptRemote,
 } from '../lib/api';
-import { loadSessionState, saveSessionState } from '../lib/db';
-import { loadLocalOnboarding } from '../lib/onboarding';
+import { clearSessionState, loadSessionState, saveSessionState } from '../lib/db';
+import { clearLocalOnboarding, loadLocalOnboarding } from '../lib/onboarding';
 
 import {
   type Attempt,
@@ -112,6 +112,19 @@ export function AppStoreProvider({ children }: { children: ReactNode }): ReactEl
             });
           }
           return;
+        }
+
+        // A URL of the form /?fresh=1 always wipes local anonymous progress
+        // before loading — bookmark that URL and hard-refreshing it is a
+        // repeatable "brand new visitor" test session. Never applies to a
+        // signed-in account, so a stray query param can't nuke real progress.
+        if (
+          typeof window !== 'undefined' &&
+          new URLSearchParams(window.location.search).get('fresh') === '1'
+        ) {
+          await clearSessionState(track.id);
+          clearLocalOnboarding();
+          window.history.replaceState(null, '', window.location.pathname);
         }
 
         const persisted = await loadSessionState(track.id);
