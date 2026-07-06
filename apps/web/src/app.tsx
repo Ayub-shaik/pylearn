@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { ReactElement } from 'react';
 import { Link, NavLink, Route, Routes } from 'react-router-dom';
 
+import { SaveProgressNudge } from './components/SaveProgressNudge';
 import { About } from './routes/About';
 import { Home } from './routes/Home';
 import { Lesson } from './routes/Lesson';
@@ -126,6 +127,8 @@ export function App(): ReactElement {
           </div>
         </div>
       </footer>
+
+      <SaveProgressNudge />
     </div>
   );
 }

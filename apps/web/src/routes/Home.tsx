@@ -52,19 +52,20 @@ export function Home(): ReactElement {
       <div className="space-y-8">
         <div className="card mx-auto max-w-3xl space-y-5 p-8 text-center">
           <p className="text-xs font-semibold uppercase tracking-widest text-primary-light">
-            Learn Python by doing
+            No signup required
           </p>
           <h2 className="text-3xl font-semibold text-white sm:text-4xl">
-            Short lessons. Live code. Instant feedback.
+            Start learning Python right now — check your knowledge, or learn from scratch.
           </h2>
           <p className="mx-auto max-w-xl text-sm text-slate-300 sm:text-base">
-            PyLearn teaches Python through hands-on checkpoints — multiple choice,
-            fill-in-the-blank, and code you actually run — with an AI tutor that explains why an
-            answer is right or wrong, not just what the answer is.
+            Jump straight into hands-on checkpoints — multiple choice, fill-in-the-blank, and code
+            you actually run — with an AI tutor that explains why an answer is right or wrong, not
+            just what the answer is. No account, no email, no wall — start now, and save your
+            progress later only if you want to.
           </p>
           <div className="flex flex-wrap justify-center gap-3 pt-2">
             <Link to="/onboarding" className="btn btn-primary">
-              Get started — takes a minute
+              Start now — no signup
             </Link>
             <Link to="/tracks" className="btn btn-secondary">
               Browse lessons first
