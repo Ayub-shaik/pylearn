@@ -27,10 +27,10 @@ export async function generateWithOllama(options: GenerateOptions): Promise<stri
         model: config.ollama.model,
         prompt: options.prompt,
         stream: false,
-        // Keep the model resident for a while after use so most requests
-        // don't pay the ~15-20s cold-load cost Ollama incurs after its
-        // default 5-minute idle eviction.
-        keep_alive: '30m',
+        // Ollama is a last-resort fallback now, not the primary tier — keep
+        // its resident-memory footprint on this shared host minimal rather
+        // than holding it loaded for a long time after an occasional use.
+        keep_alive: '1m',
         options: {
           num_predict: options.maxTokens ?? 150,
           temperature: options.temperature ?? 0.4,

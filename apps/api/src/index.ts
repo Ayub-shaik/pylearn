@@ -5,7 +5,6 @@ import Fastify from 'fastify';
 import { registerAuthRoutes } from './auth/google';
 import { registerGuestAuthRoutes } from './auth/guest';
 import { config } from './config';
-import { generateWithOllama } from './llm/client';
 import { registerAttemptRoutes } from './routes/attempts.routes';
 import { registerLlmRoutes } from './routes/llm.routes';
 import { registerProfileRoutes } from './routes/profile.routes';
@@ -33,6 +32,6 @@ app.listen({ port: config.port, host: '0.0.0.0' }).catch((error) => {
   process.exit(1);
 });
 
-// Fire-and-forget warm-up so the first real hint/chat request doesn't pay
-// Ollama's ~15-20s cold-load cost after an idle eviction.
-void generateWithOllama({ prompt: 'Say hi in one word.', maxTokens: 5 }).catch(() => undefined);
+// No Ollama warm-up call here: NVIDIA NIM is the primary generation tier
+// (see llm/policy.ts) — we deliberately don't keep the local model loaded
+// on this shared host unless a request actually falls back to it.

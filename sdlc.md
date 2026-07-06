@@ -232,9 +232,9 @@ P5.1 Tiered Generation (cheapest/most-reliable first)
 
 [x] Tier 1 — cache: `llm_generations` table serves previously generated content for a checkpoint+task before anything is generated live.
 
-[x] Tier 2 — local Ollama (`llama3.2:3b`), concurrency-capped to 1 in-flight request with a short timeout, reachable via the host's existing Ollama install (no new model download).
+[x] Tier 2 — NVIDIA NIM free tier (`meta/llama-3.1-8b-instruct`), enabled via `LLM_OVERFLOW_ENABLED`. Promoted to primary (ahead of local Ollama) since this host is a shared personal dev machine — Ollama's response times and memory footprint here were poor enough that we chose not to depend on it day to day.
 
-[x] Tier 3 — optional cloud overflow (NVIDIA NIM free tier), off by default via `LLM_OVERFLOW_ENABLED`, never on the hot path unless explicitly turned on.
+[x] Tier 3 — local Ollama (`llama3.2:3b`), now a fallback only (NVIDIA unavailable/rate-limited/disabled), concurrency-capped to 1 in-flight request with a short timeout and a short `keep_alive` so it doesn't linger in memory after an occasional use.
 
 [x] Tier 4 — deterministic template fallback: the lesson's own authored `hints`/`explanation` text, used whenever tiers 1-3 miss or fail.
 

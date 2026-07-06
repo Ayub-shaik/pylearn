@@ -40,9 +40,12 @@ our own curated lesson content — not open-ended code generation. Generation is
 most reliable first:
 
 1. Cache — previously generated variants for a checkpoint are served directly, no live inference.
-2. Local Ollama (`llama3.2:3b`) — runs on our own infrastructure, concurrency-capped so it never
-   blocks on itself.
-3. Optional cloud overflow (NVIDIA NIM free tier) — off by default, only for extra headroom.
+2. NVIDIA NIM free tier (`meta/llama-3.1-8b-instruct`) — primary tier. The host that would run a
+   local model is a shared personal dev machine, not dedicated inference infra, so we lean on this
+   free-tier cloud model for day-to-day speed and reliability instead.
+3. Local Ollama (`llama3.2:3b`) — fallback only, used when NVIDIA is unavailable, rate-limited, or
+   disabled. Concurrency-capped and kept out of memory between uses so it doesn't linger on a
+   machine that's also running other things.
 4. Deterministic template — the lesson's own authored hint/explanation text, used whenever the
    above tiers miss or produce output that doesn't look grounded in the source material.
 
@@ -75,7 +78,7 @@ Progress & Scoring: XP, streaks, topic mastery bars, session summaries, and a pe
 
 Account-based Data: Signed-in progress lives in Postgres, tied to your Google account; anonymous use falls back to local-only browser storage.
 
-No paid AI APIs: Hints/quiz variations come from our own self-hosted model, with a free-tier cloud option as an optional, off-by-default overflow valve.
+No paid AI APIs: Hints/quiz variations come from a free-tier cloud model (NVIDIA NIM) as the primary path, with a self-hosted local model as a fallback — never a paid third-party AI service.
 
 Architecture (shared-core first)
 
@@ -102,7 +105,7 @@ Key Patterns
 
 nginx proxies `/api` to the backend under the same domain, so auth cookies stay same-origin with no CORS complexity.
 
-LLM routing (`apps/api/src/llm`): cache → local Ollama → optional cloud overflow → deterministic template, always grounded in `packages/data` content.
+LLM routing (`apps/api/src/llm`): cache → NVIDIA NIM (primary) → local Ollama (fallback) → deterministic template, always grounded in `packages/data` content.
 
 Guardrails: deterministic templates for hints/explanations by default; retrieve curated snippets from `packages/data` first, then only augment with the LLM, and discard any ungrounded output.
 
