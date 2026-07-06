@@ -6,8 +6,8 @@ import eslintPluginImport from 'eslint-plugin-import';
 import eslintConfigPrettier from 'eslint-config-prettier';
 
 export default [
-  // Ignore build artifacts
-  { ignores: ['node_modules/**', 'dist/**', 'build/**', '.husky/**', '.pnpm-store/**'] },
+  // Ignore build artifacts (must be **/dist, not dist, to catch apps/*/dist)
+  { ignores: ['**/node_modules/**', '**/dist/**', '**/build/**', '.husky/**', '.pnpm-store/**'] },
 
   // Base JS rules
   js.configs.recommended,
