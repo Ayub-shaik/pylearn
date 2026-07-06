@@ -67,6 +67,8 @@ export interface Lesson {
   checkpoints: Checkpoint[];
 }
 
+export type ModuleDifficulty = 'beginner' | 'intermediate' | 'advanced';
+
 export interface Module {
   id: string;
   trackId: string;
@@ -74,6 +76,12 @@ export interface Module {
   summary: string;
   description?: string;
   lessons: Lesson[];
+  /** Rough level, used for future placement/personalization — not enforced yet. */
+  difficulty?: ModuleDifficulty;
+  /** Career-goal relevance keys (e.g. 'devops', 'network') for future personalization rules. */
+  tags?: string[];
+  /** Module ids that should be completed before this one, for future gating rules. */
+  prerequisites?: string[];
 }
 
 export interface Track {

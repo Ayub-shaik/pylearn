@@ -131,6 +131,17 @@
           "items": {
             "$ref": "#/$defs/LessonRef"
           }
+        },
+        "difficulty": {
+          "enum": ["beginner", "intermediate", "advanced"]
+        },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "prerequisites": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/Identifier" }
         }
       },
       "required": ["kind", "id", "title", "trackId", "lessons"],

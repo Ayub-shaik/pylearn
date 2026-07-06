@@ -6,5 +6,6 @@ export * from './components/CodeCell';
 export * from './components/HintPanel';
 export * from './components/ResultExplainer';
 export * from './components/ProgressBar';
+export * from './components/ProgressRing';
 export * from './components/StreakChip';
 export * from './components/ChatBox';

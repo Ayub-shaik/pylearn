@@ -1,4 +1,5 @@
 import { updateMastery } from './mastery';
+import { isModuleComplete } from './roadmap';
 import { scoreAttempt } from './scoring';
 import {
   Attempt,
@@ -67,20 +68,41 @@ export function firstCheckpointOfLesson(
  * onboarding placement would get yanked backward into it the moment they
  * finish a checkpoint, since it remains "unattempted" forever. Skipped
  * lessons stay reachable manually via Tracks, just not auto-advanced into.
+ *
+ * Crossing into a new module is gated on the preceding module clearing the
+ * mastery completion threshold — otherwise a learner could breeze through
+ * one quiz per lesson and get auto-advanced into unrelated new material
+ * with no real depth. Lesson-to-lesson advancement *within* the same
+ * module is unaffected; this only holds at module boundaries.
  */
 export function selectNextCheckpoint(
   track: Track,
   session: SessionState,
 ): CheckpointRef | undefined {
-  const attempted = new Set(session.attempts.map((attempt) => attempt.checkpointId));
+  // Only a *correct* attempt marks a checkpoint as done — a wrong attempt
+  // must not be skipped over, otherwise the learner gets silently advanced
+  // past a question they never actually got right.
+  const attempted = new Set(
+    session.attempts.filter((attempt) => attempt.isCorrect).map((attempt) => attempt.checkpointId),
+  );
   const orderedLessons = flattenLessons(track);
   const currentIndex = session.currentLessonId
     ? orderedLessons.findIndex((lesson) => lesson.id === session.currentLessonId)
     : -1;
   const searchFrom = currentIndex === -1 ? 0 : currentIndex;
 
+  let boundaryModuleId = orderedLessons[searchFrom]?.moduleId;
+
   for (let i = searchFrom; i < orderedLessons.length; i += 1) {
     const lesson = orderedLessons[i];
+    if (boundaryModuleId && lesson.moduleId !== boundaryModuleId) {
+      const precedingModule = track.modules.find((candidate) => candidate.id === boundaryModuleId);
+      if (precedingModule && !isModuleComplete(precedingModule, session.mastery)) {
+        return undefined;
+      }
+      boundaryModuleId = lesson.moduleId;
+    }
+
     const checkpoint = lesson.checkpoints.find((candidate) => !attempted.has(candidate.id));
     if (checkpoint) {
       return { lessonId: lesson.id, checkpointId: checkpoint.id };
@@ -117,6 +139,25 @@ export function submitAnswer(
     attempts: updatedAttempts,
     mastery: updatedMastery,
   };
+
+  // A wrong attempt must not move the cursor forward — the learner stays on
+  // the same checkpoint until they get it right (or reveal the answer), so
+  // the session they'd resume into (e.g. after a refresh) always matches
+  // what they're actually looking at.
+  if (!recordedAttempt.isCorrect) {
+    return {
+      session: {
+        ...updatedSession,
+        currentLessonId: attempt.lessonId,
+        currentCheckpointId: attempt.checkpointId,
+      },
+      feedback: {
+        correct: false,
+        rationale: evaluation.rationale,
+        next: undefined,
+      },
+    };
+  }
 
   const nextRef = selectNextCheckpoint(track, updatedSession);
   const sessionWithCursor: SessionState = {

@@ -30,6 +30,9 @@ interface RawModule {
   summary: string;
   description?: string;
   lessons: ModuleLessonReference[];
+  difficulty?: Module['difficulty'];
+  tags?: string[];
+  prerequisites?: string[];
 }
 
 /**
@@ -58,6 +61,9 @@ export async function loadTrack(dir: string): Promise<Track> {
       summary: moduleRaw.summary,
       description: moduleRaw.description,
       lessons,
+      difficulty: moduleRaw.difficulty,
+      tags: moduleRaw.tags,
+      prerequisites: moduleRaw.prerequisites,
     });
   }
 

@@ -61,6 +61,31 @@
         "H1": "The name `age` isn't the number itself — it's a label on a box containing the number.",
         "H2": "The correct answer describes a name pointing at a value, not the value itself being fixed."
       }
+    },
+    {
+      "id": "checkpoint.getting-started.reassigning",
+      "type": "note",
+      "title": "Reassigning a variable",
+      "content": "The box's contents can change. If you write `score = 10` and later write `score = 20`, the box named `score` now holds 20 — the old value 10 is gone. Writing a variable's name followed by `=` and a new value always replaces what's inside.",
+      "explanation": "This is why variables are useful: your code can keep using the same name (`score`) even as the value it points to changes over time.",
+      "hints": {
+        "H0": "Assignment always overwrites — it doesn't add a second value to the box.",
+        "H1": "After `score = 20`, asking for `score` gives you 20, not 10.",
+        "H2": "Each `=` statement replaces the box's previous contents entirely."
+      }
+    },
+    {
+      "id": "checkpoint.getting-started.first-assignment",
+      "type": "fill-blank",
+      "title": "Write your first assignment",
+      "content": "Complete the assignment so that the name `x` stores the value `5`.",
+      "answer": "x = 5",
+      "explanation": "Assignment uses a single equals sign to bind the value on the right to the name on the left — the same pattern you'll use for every variable.",
+      "hints": {
+        "H0": "Start with the name that should receive the value.",
+        "H1": "Use a single `=` between the name and the value.",
+        "H2": "Use `x = 5`."
+      }
     }
   ]
 }
