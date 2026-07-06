@@ -218,7 +218,13 @@ function evaluateAttempt(checkpoint: Checkpoint | undefined, attempt: Attempt) {
     case 'code-cell':
     case 'note':
     default:
-      return { correct: attempt.isCorrect, rationale: checkpoint.explanation };
+      // Neither type has a "wrong" state today (notes are just acknowledged;
+      // code-cell doesn't validate execution output yet) — always correct,
+      // rather than trusting attempt.isCorrect. That field isn't a reliable
+      // signal here: the authenticated API route doesn't (and shouldn't have
+      // to) know per-checkpoint-type semantics, so it can't be trusted to
+      // send true for these two types the way the anonymous client does.
+      return { correct: true, rationale: checkpoint.explanation };
   }
 }
 
