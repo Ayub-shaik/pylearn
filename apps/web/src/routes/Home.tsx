@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import type { ReactElement } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
+import { RoadmapPreview } from '../components/RoadmapPreview';
 import { loadLocalOnboarding } from '../lib/onboarding';
 import { Spinner } from '../lib/Spinner';
 import { useAppStore } from '../state/store';
@@ -137,6 +138,8 @@ export function Home(): ReactElement {
             </li>
           </ol>
         </div>
+
+        <RoadmapPreview />
       </div>
     );
   }
@@ -191,6 +194,8 @@ export function Home(): ReactElement {
           </Link>
         </div>
       ) : null}
+
+      <RoadmapPreview />
 
       {session && session.attempts.length > 0 ? (
         <div className="card mx-auto max-w-3xl space-y-3 p-6">
