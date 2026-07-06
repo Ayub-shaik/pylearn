@@ -1,16 +1,11 @@
 import { useEffect, useState } from 'react';
 
-import { getAuthConfig, guestLogin } from '../lib/api';
+import { getAuthConfig } from '../lib/api';
 import { useAppStore } from '../state/store';
 
 export function Login() {
   const { authStatus, user, signIn, signOut } = useAppStore();
   const [googleEnabled, setGoogleEnabled] = useState<boolean | null>(null);
-  const [guestLoginEnabled, setGuestLoginEnabled] = useState(false);
-  const [guestUsername, setGuestUsername] = useState('');
-  const [guestPassword, setGuestPassword] = useState('');
-  const [guestError, setGuestError] = useState<string | null>(null);
-  const [guestSubmitting, setGuestSubmitting] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -18,7 +13,6 @@ export function Login() {
       .then((config) => {
         if (!cancelled) {
           setGoogleEnabled(config.googleEnabled);
-          setGuestLoginEnabled(config.guestLoginEnabled);
         }
       })
       .catch(() => {
@@ -28,19 +22,6 @@ export function Login() {
       cancelled = true;
     };
   }, []);
-
-  const handleGuestLogin = async () => {
-    setGuestError(null);
-    setGuestSubmitting(true);
-    try {
-      await guestLogin(guestUsername, guestPassword);
-      window.location.href = '/';
-    } catch {
-      setGuestError('Invalid guest credentials.');
-    } finally {
-      setGuestSubmitting(false);
-    }
-  };
 
   return (
     <div className="mx-auto max-w-md space-y-6">
@@ -82,37 +63,6 @@ export function Login() {
             >
               Sign in with Google
             </button>
-
-            {guestLoginEnabled ? (
-              <div className="space-y-2 border-t border-slate-800 pt-4">
-                <p className="text-xs uppercase tracking-wide text-slate-500">
-                  Dev guest login (debug only)
-                </p>
-                <input
-                  type="text"
-                  placeholder="Username"
-                  value={guestUsername}
-                  onChange={(event) => setGuestUsername(event.target.value)}
-                  className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100 focus:border-primary focus:outline-none"
-                />
-                <input
-                  type="password"
-                  placeholder="Password"
-                  value={guestPassword}
-                  onChange={(event) => setGuestPassword(event.target.value)}
-                  className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100 focus:border-primary focus:outline-none"
-                />
-                {guestError ? <p className="text-xs text-red-300">{guestError}</p> : null}
-                <button
-                  type="button"
-                  className="btn-secondary"
-                  disabled={guestSubmitting}
-                  onClick={() => void handleGuestLogin()}
-                >
-                  {guestSubmitting ? 'Signing in…' : 'Sign in as guest'}
-                </button>
-              </div>
-            ) : null}
           </div>
         )}
       </div>

@@ -58,10 +58,6 @@ export function googleSignInUrl(): string {
   return `${API_BASE}/auth/google/start`;
 }
 
-export function guestLogin(username: string, password: string): Promise<{ ok: boolean }> {
-  return request('/auth/guest', { method: 'POST', body: JSON.stringify({ username, password }) });
-}
-
 export function saveOnboarding(
   startingLevel: string,
   learningGoal: string,
