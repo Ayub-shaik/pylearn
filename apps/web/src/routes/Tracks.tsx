@@ -13,10 +13,22 @@ import { LessonCard, StreakChip } from '@pylearn/ui-kit';
 
 export function Tracks(): ReactElement {
   const navigate = useNavigate();
-  const { track, loading, error, attempts, session, summary, authStatus, user, setActiveLesson } =
-    useAppStore();
+  const {
+    track,
+    loading,
+    error,
+    attempts,
+    session,
+    summary,
+    authStatus,
+    user,
+    setActiveLesson,
+    resetModule,
+  } = useAppStore();
 
   const [manualSelectedModuleId, setManualSelectedModuleId] = useState<string | undefined>();
+  const [confirmingResetModuleId, setConfirmingResetModuleId] = useState<string | undefined>();
+  const [resettingModule, setResettingModule] = useState(false);
 
   const roadmap = useMemo(() => {
     if (!track || !session) return undefined;
@@ -71,6 +83,16 @@ export function Tracks(): ReactElement {
     navigate(`/lesson/${lessonId}`);
   };
 
+  const handleRetakeModule = async (moduleId: string) => {
+    setResettingModule(true);
+    try {
+      await resetModule(moduleId);
+    } finally {
+      setResettingModule(false);
+      setConfirmingResetModuleId(undefined);
+    }
+  };
+
   const learningGoal =
     authStatus === 'authenticated' ? user?.learningGoal : loadLocalOnboarding()?.learningGoal;
   const learningGoalLabel = LEARNING_GOAL_OPTIONS.find((o) => o.value === learningGoal)?.label;
@@ -106,9 +128,42 @@ export function Tracks(): ReactElement {
 
         {selectedModule ? (
           <section className="card space-y-4 p-6">
-            <header>
-              <h3 className="text-xl font-semibold text-white">{selectedModule.module.title}</h3>
-              <p className="mt-1 text-sm text-slate-300">{selectedModule.module.summary}</p>
+            <header className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <h3 className="text-xl font-semibold text-white">{selectedModule.module.title}</h3>
+                <p className="mt-1 text-sm text-slate-300">{selectedModule.module.summary}</p>
+              </div>
+              {selectedModule.progressPercent > 0 ? (
+                confirmingResetModuleId === selectedModule.module.id ? (
+                  <div className="flex shrink-0 items-center gap-2 text-xs">
+                    <span className="text-red-300">Retake this module? Progress is cleared.</span>
+                    <button
+                      type="button"
+                      className="btn btn-primary bg-red-600 py-1 text-xs hover:bg-red-500"
+                      disabled={resettingModule}
+                      onClick={() => void handleRetakeModule(selectedModule.module.id)}
+                    >
+                      {resettingModule ? 'Resetting…' : 'Yes, retake'}
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-secondary py-1 text-xs"
+                      disabled={resettingModule}
+                      onClick={() => setConfirmingResetModuleId(undefined)}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    className="btn btn-secondary shrink-0 py-1 text-xs"
+                    onClick={() => setConfirmingResetModuleId(selectedModule.module.id)}
+                  >
+                    Retake module
+                  </button>
+                )
+              ) : null}
             </header>
             <ul className="space-y-3">
               {selectedModule.lessons.map((lessonView) => (

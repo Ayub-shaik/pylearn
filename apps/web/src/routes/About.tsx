@@ -1,7 +1,14 @@
 import type { ReactElement } from 'react';
 import { Link } from 'react-router-dom';
 
+import { loadLocalOnboarding } from '../lib/onboarding';
+import { useAppStore } from '../state/store';
+
 export function About(): ReactElement {
+  const { authStatus, user } = useAppStore();
+  const hasOnboarded =
+    authStatus === 'authenticated' ? Boolean(user?.startingLevel) : Boolean(loadLocalOnboarding());
+
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <div className="card space-y-3 p-6">
@@ -45,9 +52,15 @@ export function About(): ReactElement {
           signing up for a goal now helps us prioritize which one to build first. Spaced-repetition
           review and a native mobile app are on the roadmap too, further out.
         </p>
-        <Link to="/onboarding" className="btn btn-primary w-fit">
-          Get started
-        </Link>
+        {hasOnboarded ? (
+          <Link to="/tracks" className="btn btn-primary w-fit">
+            Continue learning
+          </Link>
+        ) : (
+          <Link to="/onboarding" className="btn btn-primary w-fit">
+            Get started
+          </Link>
+        )}
       </div>
     </div>
   );

@@ -1,4 +1,31 @@
+import { useState } from 'react';
+
+import { resetProgress } from '../lib/api';
+import { clearSessionState } from '../lib/db';
+import { clearLocalOnboarding } from '../lib/onboarding';
+import { useAppStore } from '../state/store';
+
 export function Settings() {
+  const { authStatus, track } = useAppStore();
+  const [confirming, setConfirming] = useState(false);
+  const [resetting, setResetting] = useState(false);
+
+  const handleReset = async () => {
+    setResetting(true);
+    try {
+      if (authStatus === 'authenticated') {
+        await resetProgress();
+      } else {
+        clearLocalOnboarding();
+        if (track) {
+          await clearSessionState(track.id);
+        }
+      }
+    } finally {
+      window.location.href = '/';
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="card mx-auto max-w-3xl space-y-4 p-6">
@@ -20,6 +47,46 @@ export function Settings() {
             </a>{' '}
             page.
           </p>
+        </section>
+
+        <section
+          aria-labelledby="reset-progress"
+          className="space-y-2 border-t border-slate-800 pt-4"
+        >
+          <h3 id="reset-progress" className="text-lg font-semibold text-white">
+            Reset progress
+          </h3>
+          <p className="text-sm text-slate-400">
+            Clears every attempt, mastery score, and onboarding answer, then starts you over from
+            scratch — as if you were a brand new learner. This can&apos;t be undone.
+          </p>
+          {confirming ? (
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="text-sm text-red-300">
+                Reset everything? This can&apos;t be undone.
+              </span>
+              <button
+                type="button"
+                className="btn btn-primary bg-red-600 hover:bg-red-500"
+                disabled={resetting}
+                onClick={() => void handleReset()}
+              >
+                {resetting ? 'Resetting…' : 'Yes, reset everything'}
+              </button>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                disabled={resetting}
+                onClick={() => setConfirming(false)}
+              >
+                Cancel
+              </button>
+            </div>
+          ) : (
+            <button type="button" className="btn btn-secondary" onClick={() => setConfirming(true)}>
+              Reset progress
+            </button>
+          )}
         </section>
       </div>
     </div>

@@ -7,6 +7,7 @@ import {
   googleSignInUrl,
   getSession as getRemoteSession,
   logout as remoteLogout,
+  resetModuleRemote,
   submitAttemptRemote,
 } from '../lib/api';
 import { loadSessionState, saveSessionState } from '../lib/db';
@@ -25,6 +26,7 @@ import {
   type Track,
   getSummary,
   recommendedStartingLessonId,
+  resetModuleProgress,
   startSession,
   submitAnswer,
 } from '@pylearn/core';
@@ -62,6 +64,7 @@ export interface SubmitAttemptPayload {
 export interface AppActions {
   setActiveLesson: (_lessonId: string) => Promise<void>;
   submitAttempt: (_payload: SubmitAttemptPayload) => Promise<SubmissionFeedback | undefined>;
+  resetModule: (_moduleId: string) => Promise<void>;
   signIn: () => void;
   signOut: () => Promise<void>;
 }
@@ -230,6 +233,28 @@ export function AppStoreProvider({ children }: { children: ReactNode }): ReactEl
     [persistSession, internal.authStatus, internal.track],
   );
 
+  const resetModule = useCallback(
+    async (moduleId: string): Promise<void> => {
+      if (internal.authStatus === 'authenticated' && internal.track) {
+        const response = await resetModuleRemote(internal.track.id, moduleId);
+        setInternal((prev) => ({ ...prev, session: response.session }));
+        return;
+      }
+
+      let nextSession: SessionState | undefined;
+      setInternal((prev) => {
+        if (!prev.track || !prev.session) return prev;
+        nextSession = resetModuleProgress(prev.track, prev.session, moduleId);
+        return { ...prev, session: nextSession };
+      });
+
+      if (nextSession) {
+        await saveSessionState(nextSession);
+      }
+    },
+    [internal.authStatus, internal.track],
+  );
+
   const track = internal.track;
   const session = internal.session;
   const attempts = session?.attempts ?? [];
@@ -257,6 +282,7 @@ export function AppStoreProvider({ children }: { children: ReactNode }): ReactEl
       user: internal.user,
       setActiveLesson,
       submitAttempt,
+      resetModule,
       signIn,
       signOut,
     }),
@@ -271,6 +297,7 @@ export function AppStoreProvider({ children }: { children: ReactNode }): ReactEl
       session,
       setActiveLesson,
       submitAttempt,
+      resetModule,
       signIn,
       signOut,
       summary,

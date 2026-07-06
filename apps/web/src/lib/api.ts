@@ -76,6 +76,17 @@ export function getSession(trackId: string): Promise<{ session: SessionState; su
   return request(`/sessions/${trackId}`);
 }
 
+export function resetProgress(): Promise<{ ok: boolean }> {
+  return request('/profile/reset', { method: 'POST' });
+}
+
+export function resetModuleRemote(
+  trackId: string,
+  moduleId: string,
+): Promise<{ session: SessionState; summary: unknown }> {
+  return request(`/sessions/${trackId}/modules/${moduleId}/reset`, { method: 'POST' });
+}
+
 export interface SubmitAttemptPayload {
   trackId: string;
   lessonId: string;

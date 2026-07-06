@@ -39,3 +39,8 @@ export function saveLocalOnboarding(answers: OnboardingAnswers): void {
   if (typeof window === 'undefined') return;
   window.localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(answers));
 }
+
+export function clearLocalOnboarding(): void {
+  if (typeof window === 'undefined') return;
+  window.localStorage.removeItem(LOCAL_STORAGE_KEY);
+}

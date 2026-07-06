@@ -38,4 +38,20 @@ export function registerProfileRoutes(app: FastifyInstance): void {
       return { ok: true };
     },
   );
+
+  // Wipes this user's progress for every track entirely (attempts cascade-delete with the
+  // session row) and clears onboarding answers, so they can genuinely start over — placement
+  // only repositions an existing session when it has zero attempts, so without this a returning
+  // user re-running onboarding just lands back where they already were.
+  app.post('/api/profile/reset', { preHandler: requireAuth }, async (request) => {
+    await db
+      .delete(schema.learningSessions)
+      .where(eq(schema.learningSessions.userId, request.user!.id));
+    await db
+      .update(schema.users)
+      .set({ startingLevel: null, learningGoal: null })
+      .where(eq(schema.users.id, request.user!.id));
+
+    return { ok: true };
+  });
 }

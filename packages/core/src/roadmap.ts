@@ -1,5 +1,49 @@
 import type { Lesson, Mastery, Module, SessionState, Track } from './types';
 
+/**
+ * Clear all attempts and mastery for a single module's lessons, and point the
+ * session back at its first checkpoint — a "retake this module" action.
+ * Other modules' progress is untouched.
+ */
+export function resetModuleProgress(
+  track: Track,
+  session: SessionState,
+  moduleId: string,
+): SessionState {
+  const module = track.modules.find((candidate) => candidate.id === moduleId);
+  if (!module) return session;
+
+  const lessonIds = new Set(module.lessons.map((lesson) => lesson.id));
+  const attempts = session.attempts.filter((attempt) => !lessonIds.has(attempt.lessonId));
+
+  const lessonPercent = { ...session.mastery.lessonPercent };
+  for (const lessonId of lessonIds) {
+    delete lessonPercent[lessonId];
+  }
+  const values = Object.values(lessonPercent);
+  const overallPercent = values.length
+    ? Math.round(values.reduce((sum, value) => sum + value, 0) / values.length)
+    : 0;
+
+  const mastery: Mastery = {
+    ...session.mastery,
+    lessonPercent,
+    overallPercent,
+    updatedAt: Date.now(),
+  };
+  const firstLesson = module.lessons[0];
+  const firstCheckpoint = firstLesson?.checkpoints[0];
+
+  return {
+    ...session,
+    attempts,
+    mastery,
+    currentLessonId: firstLesson?.id ?? session.currentLessonId,
+    currentCheckpointId: firstCheckpoint?.id ?? session.currentCheckpointId,
+    completedAt: undefined,
+  };
+}
+
 /** A lesson only counts as "done" once its running mastery score clears this bar. */
 export const MASTERY_COMPLETION_THRESHOLD = 80;
 
