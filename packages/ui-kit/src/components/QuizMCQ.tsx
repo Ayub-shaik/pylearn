@@ -35,6 +35,13 @@ export function QuizMCQ({
   useEffect(() => {
     setSelectedId(initialSelectionId);
     onSelectionChange?.(initialSelectionId);
+    // A retry clears the selection back to undefined while keeping the same
+    // questionId — without this, submittedId/verdict from the wrong attempt
+    // would linger and keep the form permanently locked.
+    if (initialSelectionId === undefined) {
+      setSubmittedId(undefined);
+      setVerdict(null);
+    }
   }, [initialSelectionId, onSelectionChange]);
 
   useEffect(() => {

@@ -36,30 +36,22 @@ export function HintPanel({
     <section
       aria-live="polite"
       aria-label="Hint panel"
-      style={{
-        marginTop: '1rem',
-        padding: '0.75rem',
-        border: '1px solid var(--pylearn-border, #d0d7de)',
-        borderRadius: 6,
-        background: 'var(--pylearn-hint-bg, #f1f5f9)',
-      }}
+      className="mt-4 rounded-md border border-slate-800 bg-slate-900/60 p-3"
     >
-      <header
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          gap: '0.75rem',
-        }}
-      >
-        <strong>Need a hint?</strong>
+      <header className="flex items-center justify-between gap-3">
+        <strong className="text-sm font-medium text-slate-200">Need a hint?</strong>
         {showButton ? (
-          <button type="button" onClick={onNextLevel} disabled={disabled}>
+          <button
+            type="button"
+            onClick={onNextLevel}
+            disabled={disabled}
+            className="btn btn-secondary py-1 text-xs"
+          >
             {nextLabel}
           </button>
         ) : null}
       </header>
-      {displayText ? <p style={{ marginTop: '0.5rem' }}>{displayText}</p> : null}
+      {displayText ? <p className="mt-2 text-sm text-slate-300">{displayText}</p> : null}
     </section>
   );
 }

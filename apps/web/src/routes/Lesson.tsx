@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { ReactElement } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 
 import { requestChat, requestHint } from '../lib/api';
 import { Spinner } from '../lib/Spinner';
@@ -47,6 +47,7 @@ function isHintLevel(level: HintStage | null): level is HintLevel {
 
 export function Lesson(): ReactElement {
   const { lessonId } = useParams<{ lessonId: string }>();
+  const navigate = useNavigate();
   const {
     track,
     session,
@@ -254,6 +255,9 @@ export function Lesson(): ReactElement {
   const handleNext = () => {
     if (nextRef) {
       setActiveLesson(nextRef.lessonId);
+      if (nextRef.lessonId !== lessonId) {
+        navigate(`/lesson/${nextRef.lessonId}`);
+      }
     }
     setHintStage(null);
     setFeedback(null);
@@ -337,10 +341,14 @@ export function Lesson(): ReactElement {
               {lessonId?.replace('lesson.', '').replace(/\./g, ' › ')}
             </p>
             <h2 className="text-xl font-semibold text-white">{currentCheckpoint.title}</h2>
-            <p className="text-sm text-slate-300">{currentCheckpoint.content}</p>
+            {/* quiz-mcq and fill-blank already render checkpoint.content themselves
+                (as the legend / field label) — showing it here too would repeat it. */}
+            {currentCheckpoint.type !== 'quiz-mcq' && currentCheckpoint.type !== 'fill-blank' ? (
+              <p className="text-sm text-slate-300">{currentCheckpoint.content}</p>
+            ) : null}
           </header>
 
-          {currentCheckpoint.hints || revealText ? (
+          {currentCheckpoint.type !== 'note' && (currentCheckpoint.hints || revealText) ? (
             <div className="space-y-1">
               <HintPanel
                 h0={aiHints.H0?.content ?? currentCheckpoint.hints?.H0}
@@ -379,7 +387,11 @@ export function Lesson(): ReactElement {
           {feedback ? (
             <footer className="flex items-center justify-between rounded-lg bg-slate-900/60 px-4 py-3 text-sm text-slate-200">
               <span>
-                {feedback.correct ? '✅ Correct' : '❌ Incorrect'} — {feedback.rationale}
+                {currentCheckpoint.type === 'note'
+                  ? '📝 Noted'
+                  : feedback.correct
+                    ? `✅ Correct — ${feedback.rationale}`
+                    : `❌ Incorrect — ${feedback.rationale}`}
               </span>
               {canProgress ? (
                 nextRef ? (
