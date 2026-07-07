@@ -163,6 +163,12 @@ export function Home(): ReactElement {
               Resume {currentLesson ? currentLesson.title : 'last lesson'}
             </button>
           ) : null}
+          <Link
+            to="/settings"
+            className="ml-auto self-center text-xs text-slate-500 underline hover:text-slate-300"
+          >
+            Start over / reset progress
+          </Link>
         </div>
       </div>
 

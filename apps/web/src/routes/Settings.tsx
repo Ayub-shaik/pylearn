@@ -1,30 +1,9 @@
-import { useState } from 'react';
-
-import { resetProgress } from '../lib/api';
-import { clearSessionState } from '../lib/db';
-import { clearLocalOnboarding } from '../lib/onboarding';
+import { useResetProgress } from '../lib/useResetProgress';
 import { useAppStore } from '../state/store';
 
 export function Settings() {
-  const { authStatus, track } = useAppStore();
-  const [confirming, setConfirming] = useState(false);
-  const [resetting, setResetting] = useState(false);
-
-  const handleReset = async () => {
-    setResetting(true);
-    try {
-      if (authStatus === 'authenticated') {
-        await resetProgress();
-      } else {
-        clearLocalOnboarding();
-        if (track) {
-          await clearSessionState(track.id);
-        }
-      }
-    } finally {
-      window.location.href = '/';
-    }
-  };
+  const { authStatus } = useAppStore();
+  const { confirming, resetting, requestConfirm, cancelConfirm, confirmReset } = useResetProgress();
 
   return (
     <div className="space-y-6">
@@ -69,7 +48,7 @@ export function Settings() {
                 type="button"
                 className="btn btn-primary bg-red-600 hover:bg-red-500"
                 disabled={resetting}
-                onClick={() => void handleReset()}
+                onClick={() => void confirmReset()}
               >
                 {resetting ? 'Resetting…' : 'Yes, reset everything'}
               </button>
@@ -77,13 +56,13 @@ export function Settings() {
                 type="button"
                 className="btn btn-secondary"
                 disabled={resetting}
-                onClick={() => setConfirming(false)}
+                onClick={cancelConfirm}
               >
                 Cancel
               </button>
             </div>
           ) : (
-            <button type="button" className="btn btn-secondary" onClick={() => setConfirming(true)}>
+            <button type="button" className="btn btn-secondary" onClick={requestConfirm}>
               Reset progress
             </button>
           )}
