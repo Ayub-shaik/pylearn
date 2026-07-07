@@ -177,6 +177,21 @@ export function submitAnswer(
   };
 }
 
+/**
+ * Count of distinct checkpoints with at least one *correct* attempt —
+ * the right measure for "completed" progress. attempts.length overcounts:
+ * a wrong answer and every subsequent "Try again" retry each add a new
+ * Attempt record for the same checkpoint, which would otherwise inflate a
+ * progress bar every time someone retries, not just when they finish
+ * something new.
+ */
+export function countCompletedCheckpoints(attempts: Attempt[]): number {
+  const completed = new Set(
+    attempts.filter((attempt) => attempt.isCorrect).map((attempt) => attempt.checkpointId),
+  );
+  return completed.size;
+}
+
 export function getSummary(track: Track, session: SessionState): SessionSummary {
   void track;
   const totalScore = session.attempts.reduce((sum, attempt) => sum + (attempt.score ?? 0), 0);

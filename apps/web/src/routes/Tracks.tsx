@@ -7,7 +7,7 @@ import { LEARNING_GOAL_OPTIONS, loadLocalOnboarding } from '../lib/onboarding';
 import { Spinner } from '../lib/Spinner';
 import { useAppStore } from '../state/store';
 
-import { buildRoadmapView, computeCurrentStreak } from '@pylearn/core';
+import { buildRoadmapView, computeCurrentStreak, countCompletedCheckpoints } from '@pylearn/core';
 import type { Module } from '@pylearn/core';
 import { LessonCard, StreakChip } from '@pylearn/ui-kit';
 
@@ -112,8 +112,8 @@ export function Tracks(): ReactElement {
           </p>
         ) : null}
         <p className="text-xs uppercase tracking-wide text-slate-500">
-          Checkpoints completed: {attempts.length} / {totalCheckpoints} · Overall mastery:{' '}
-          {summary?.mastery.overallPercent ?? 0}%
+          Checkpoints completed: {countCompletedCheckpoints(attempts)} / {totalCheckpoints} ·
+          Overall mastery: {summary?.mastery.overallPercent ?? 0}%
         </p>
       </div>
 

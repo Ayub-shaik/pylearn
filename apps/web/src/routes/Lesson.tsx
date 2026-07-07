@@ -6,7 +6,7 @@ import { requestChat, requestHint } from '../lib/api';
 import { Spinner } from '../lib/Spinner';
 import { useAppStore } from '../state/store';
 
-import { advanceHintLevel, hintUsageCount } from '@pylearn/core';
+import { advanceHintLevel, countCompletedCheckpoints, hintUsageCount } from '@pylearn/core';
 import type {
   Checkpoint,
   HintLevel,
@@ -147,7 +147,7 @@ export function Lesson(): ReactElement {
       )
     : 0;
 
-  const completed = attempts.length;
+  const completed = countCompletedCheckpoints(attempts);
 
   const revealText = useMemo(() => getRevealText(currentCheckpoint), [currentCheckpoint]);
   const nextRef = feedback?.raw.next;
