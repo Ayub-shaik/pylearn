@@ -9,6 +9,11 @@
       "id": "module.python.basics.intro",
       "title": "Getting Started",
       "path": "./module-intro.json"
+    },
+    {
+      "id": "module.python.basics.control-flow",
+      "title": "Control Flow & Structure",
+      "path": "./module-control-flow.json"
     }
   ]
 }

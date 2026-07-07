@@ -1,0 +1,80 @@
+{
+  "kind": "lesson",
+  "id": "lesson.python.basics.strings",
+  "moduleId": "module.python.basics.intro",
+  "title": "Strings in Depth",
+  "summary": "Indexing, slicing, and the string methods you'll reach for constantly.",
+  "durationMinutes": 15,
+  "checkpoints": [
+    {
+      "id": "checkpoint.strings.note-indexing",
+      "type": "note",
+      "title": "Indexing and slicing",
+      "content": "A string is a sequence of characters, counted from 0. `name = \"Python\"` then `name[0]` is `\"P\"`. Slicing with `name[1:4]` gives characters at positions 1, 2, and 3 (the end index is never included) — `\"yth\"`.",
+      "explanation": "Slicing's end index being exclusive trips almost everyone up at first — `name[1:4]` gets 3 characters (4 - 1), not 4.",
+      "hints": {
+        "H0": "Counting starts at 0, not 1.",
+        "H1": "`name[a:b]` includes index a but stops right before index b.",
+        "H2": "`name[1:4]` on \"Python\" gives \"yth\"."
+      }
+    },
+    {
+      "id": "checkpoint.strings.fill-slice",
+      "type": "fill-blank",
+      "title": "Slice a string",
+      "content": "Given `word = \"hello\"`, write an expression that returns just `\"ell\"`.",
+      "answer": "word[1:4]",
+      "explanation": "\"ell\" is the characters at indexes 1, 2, and 3 — so the slice runs from 1 up to (but not including) 4.",
+      "hints": {
+        "H0": "\"e\" is at index 1 in \"hello\".",
+        "H1": "You need 3 characters, starting from index 1.",
+        "H2": "Use `word[1:4]`."
+      }
+    },
+    {
+      "id": "checkpoint.strings.quiz-methods",
+      "type": "quiz-mcq",
+      "title": "Predict a string method",
+      "content": "What does `\"  Hello \".strip().lower()` return?",
+      "options": [
+        {
+          "id": "option.strings.methods.correct",
+          "text": "\"hello\"",
+          "isCorrect": true,
+          "explanation": ".strip() removes the leading/trailing spaces, then .lower() lowercases the result."
+        },
+        {
+          "id": "option.strings.methods.spaces",
+          "text": "\"  hello \"",
+          "isCorrect": false,
+          "explanation": ".strip() removes the surrounding whitespace before .lower() even runs — the spaces don't survive."
+        },
+        {
+          "id": "option.strings.methods.title",
+          "text": "\"Hello\"",
+          "isCorrect": false,
+          "explanation": ".lower() lowercases every letter, including the capital H — it doesn't preserve casing."
+        }
+      ],
+      "explanation": "String methods chain left to right: .strip() runs first (removing the surrounding spaces), then .lower() runs on that result.",
+      "hints": {
+        "H0": "Methods chained with dots run in order, left to right.",
+        "H1": ".strip() only removes whitespace from the ends, not the middle.",
+        "H2": "The result is \"hello\" — no spaces, all lowercase."
+      }
+    },
+    {
+      "id": "checkpoint.strings.fill-fstring",
+      "type": "fill-blank",
+      "title": "Build an f-string",
+      "content": "Given `name = \"Ada\"` and `age = 30`, write an f-string that produces exactly: `Ada is 30 years old`",
+      "answer": "f\"{name} is {age} years old\"",
+      "explanation": "An f-string embeds variables directly inside `{}` placeholders, without manual string concatenation.",
+      "hints": {
+        "H0": "f-strings start with an `f` right before the opening quote.",
+        "H1": "Put each variable name inside its own pair of curly braces.",
+        "H2": "Use `f\"{name} is {age} years old\"`."
+      }
+    }
+  ]
+}

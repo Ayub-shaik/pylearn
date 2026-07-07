@@ -1,0 +1,99 @@
+{
+  "kind": "lesson",
+  "id": "lesson.python.basics.loops",
+  "moduleId": "module.python.basics.control-flow",
+  "title": "Loops",
+  "summary": "Repeat work with for and while loops, plus break and continue.",
+  "durationMinutes": 15,
+  "checkpoints": [
+    {
+      "id": "checkpoint.loops.note-for-while",
+      "type": "note",
+      "title": "for and while",
+      "content": "`for item in range(5):` runs its block once for each value 0, 1, 2, 3, 4 — `range(5)` never includes 5 itself. `while condition:` repeats as long as the condition stays true, so you need something inside the loop that eventually makes it false, or it never stops.",
+      "explanation": "range(n) always starts at 0 and stops one short of n, giving exactly n values — the same off-by-one pattern as slicing.",
+      "hints": {
+        "H0": "range(5) produces 5 numbers, but the last one is 4, not 5.",
+        "H1": "A while loop needs its condition to eventually become false.",
+        "H2": "for loops over range() are for a known number of repeats; while is for an unknown number."
+      }
+    },
+    {
+      "id": "checkpoint.loops.quiz-range",
+      "type": "quiz-mcq",
+      "title": "Predict a for loop",
+      "content": "How many times does the block inside `for i in range(3, 7):` run?",
+      "options": [
+        {
+          "id": "option.loops.range.four",
+          "text": "4 times (3, 4, 5, 6)",
+          "isCorrect": true,
+          "explanation": "range(3, 7) starts at 3 and stops before 7, producing 3, 4, 5, 6 — four values."
+        },
+        {
+          "id": "option.loops.range.seven",
+          "text": "7 times",
+          "isCorrect": false,
+          "explanation": "range(3, 7) doesn't start counting from 0 or run 7 times — it starts at 3 and stops before 7."
+        },
+        {
+          "id": "option.loops.range.three",
+          "text": "3 times (0, 1, 2)",
+          "isCorrect": false,
+          "explanation": "That would be range(3) — passing two arguments changes the start point to 3."
+        }
+      ],
+      "explanation": "With two arguments, range(start, stop) begins at start and produces values up to (but not including) stop.",
+      "hints": {
+        "H0": "range with two arguments doesn't start at 0.",
+        "H1": "List out the values: 3, 4, 5, 6 — does 7 appear?",
+        "H2": "range(3, 7) gives exactly 4 values."
+      }
+    },
+    {
+      "id": "checkpoint.loops.fill-range",
+      "type": "fill-blank",
+      "title": "Write a range() call",
+      "content": "Write a `range(...)` call that produces exactly the numbers 1, 2, 3, 4, 5.",
+      "answer": "range(1, 6)",
+      "explanation": "To include 5 as the last value, the stop argument must be one more than 5, since range's stop is exclusive.",
+      "hints": {
+        "H0": "range's stop value is never included in the result.",
+        "H1": "You want the last number produced to be 5.",
+        "H2": "Use `range(1, 6)`."
+      }
+    },
+    {
+      "id": "checkpoint.loops.quiz-break-continue",
+      "type": "quiz-mcq",
+      "title": "break vs continue",
+      "content": "Inside a loop, what does `continue` do, compared to `break`?",
+      "options": [
+        {
+          "id": "option.loops.breakcontinue.correct",
+          "text": "continue skips to the next iteration; break exits the loop entirely.",
+          "isCorrect": true,
+          "explanation": "continue jumps back to the top of the loop for the next item; break stops the loop immediately, even if items remain."
+        },
+        {
+          "id": "option.loops.breakcontinue.swapped",
+          "text": "continue exits the loop entirely; break skips to the next iteration.",
+          "isCorrect": false,
+          "explanation": "That's backwards — break is the one that exits, continue is the one that skips ahead."
+        },
+        {
+          "id": "option.loops.breakcontinue.same",
+          "text": "They do the same thing — either can be used interchangeably.",
+          "isCorrect": false,
+          "explanation": "They have distinctly different effects: one exits the whole loop, the other just moves to the next item."
+        }
+      ],
+      "explanation": "continue moves on to the loop's next iteration, skipping the rest of the current one; break stops the loop altogether, running nothing more inside it.",
+      "hints": {
+        "H0": "One of these keywords ends the loop completely.",
+        "H1": "The other just skips the remainder of the current pass.",
+        "H2": "break exits; continue skips ahead."
+      }
+    }
+  ]
+}

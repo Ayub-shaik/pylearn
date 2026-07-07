@@ -20,6 +20,21 @@
       "id": "lesson.python.basics.types",
       "title": "Working with Types",
       "path": "./lesson-002-types.json"
+    },
+    {
+      "id": "lesson.python.basics.operators",
+      "title": "Operators & Expressions",
+      "path": "./lesson-003-operators.json"
+    },
+    {
+      "id": "lesson.python.basics.strings",
+      "title": "Strings in Depth",
+      "path": "./lesson-004-strings.json"
+    },
+    {
+      "id": "lesson.python.basics.io",
+      "title": "Input & Output",
+      "path": "./lesson-005-io.json"
     }
   ]
 }

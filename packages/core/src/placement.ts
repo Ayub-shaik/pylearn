@@ -7,9 +7,12 @@ export type StartingLevel = 'new' | 'basics' | 'loops' | 'scripts';
  */
 const STARTING_LESSON_BY_LEVEL: Record<StartingLevel, string> = {
   new: 'lesson.python.basics.getting-started',
-  basics: 'lesson.python.basics.variables',
-  loops: 'lesson.python.basics.types',
-  scripts: 'lesson.python.basics.types',
+  // "I know the basics (variables, types)" — skip ahead past those two.
+  basics: 'lesson.python.basics.operators',
+  // "I know loops & functions" — skip past all of Tier 1's core control flow.
+  loops: 'lesson.python.basics.lists-tuples',
+  // "I've written scripts before" — skip to the last topic that exists today.
+  scripts: 'lesson.python.basics.dicts-sets',
 };
 
 export function recommendedStartingLessonId(level: StartingLevel): string {

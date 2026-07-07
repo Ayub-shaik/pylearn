@@ -1,0 +1,99 @@
+{
+  "kind": "lesson",
+  "id": "lesson.python.basics.lists-tuples",
+  "moduleId": "module.python.basics.control-flow",
+  "title": "Lists & Tuples",
+  "summary": "Ordered collections — lists you can change, and tuples you can't.",
+  "durationMinutes": 15,
+  "checkpoints": [
+    {
+      "id": "checkpoint.liststuples.note-basics",
+      "type": "note",
+      "title": "Mutable lists, immutable tuples",
+      "content": "A list, `nums = [1, 2, 3]`, can grow, shrink, or change after creation — `nums.append(4)` adds to it in place. A tuple, `point = (3, 4)`, looks similar but can never be changed once created — there's no `.append()` for tuples.",
+      "explanation": "Tuples are often used for values that shouldn't change, like coordinates — trying to mutate one raises a TypeError.",
+      "hints": {
+        "H0": "Square brackets make a list; parentheses make a tuple.",
+        "H1": "Only lists support methods like .append() that change the collection in place.",
+        "H2": "Tuples are fixed once created — that's the whole point of using one."
+      }
+    },
+    {
+      "id": "checkpoint.liststuples.quiz-append",
+      "type": "quiz-mcq",
+      "title": "Predict a list after append",
+      "content": "`fruits = [\"apple\", \"banana\"]`, then `fruits.append(\"cherry\")`. What is `fruits` now?",
+      "options": [
+        {
+          "id": "option.liststuples.append.correct",
+          "text": "[\"apple\", \"banana\", \"cherry\"]",
+          "isCorrect": true,
+          "explanation": ".append() adds the new item to the end of the list, in place."
+        },
+        {
+          "id": "option.liststuples.append.unchanged",
+          "text": "[\"apple\", \"banana\"] — append() returns a new list without changing the original",
+          "isCorrect": false,
+          "explanation": ".append() modifies the original list directly — it doesn't return a separate new one."
+        },
+        {
+          "id": "option.liststuples.append.front",
+          "text": "[\"cherry\", \"apple\", \"banana\"]",
+          "isCorrect": false,
+          "explanation": ".append() always adds to the end of the list, never the front."
+        }
+      ],
+      "explanation": ".append() mutates the list in place, adding the argument as the new last element.",
+      "hints": {
+        "H0": ".append() changes the original list — it doesn't create a copy.",
+        "H1": "New items always go on the end, not the beginning.",
+        "H2": "fruits is now [\"apple\", \"banana\", \"cherry\"]."
+      }
+    },
+    {
+      "id": "checkpoint.liststuples.fill-index",
+      "type": "fill-blank",
+      "title": "Access the last item",
+      "content": "Given `nums = [10, 20, 30, 40]`, write an expression that gets the last item without knowing the list's length.",
+      "answer": "nums[-1]",
+      "explanation": "Negative indexes count from the end — -1 is always the last item, -2 the second-to-last, and so on.",
+      "hints": {
+        "H0": "Python lets you index from the end using negative numbers.",
+        "H1": "The very last item is always at index -1.",
+        "H2": "Use `nums[-1]`."
+      }
+    },
+    {
+      "id": "checkpoint.liststuples.quiz-immutable",
+      "type": "quiz-mcq",
+      "title": "Predict a tuple mutation attempt",
+      "content": "`point = (3, 4)`. What happens when you run `point[0] = 5`?",
+      "options": [
+        {
+          "id": "option.liststuples.immutable.error",
+          "text": "It raises a TypeError — tuples don't support item assignment.",
+          "isCorrect": true,
+          "explanation": "Tuples are immutable, so any attempt to assign into an index fails at runtime."
+        },
+        {
+          "id": "option.liststuples.immutable.works",
+          "text": "It works, changing point to (5, 4)",
+          "isCorrect": false,
+          "explanation": "That would be true for a list — tuples specifically forbid changing their contents this way."
+        },
+        {
+          "id": "option.liststuples.immutable.silent",
+          "text": "Nothing happens — the assignment is silently ignored",
+          "isCorrect": false,
+          "explanation": "Python doesn't silently ignore this — it raises an actual error rather than failing quietly."
+        }
+      ],
+      "explanation": "Tuples are immutable by design — Python raises TypeError: 'tuple' object does not support item assignment.",
+      "hints": {
+        "H0": "Recall what makes a tuple different from a list.",
+        "H1": "Immutability means Python will actively stop you, not just ignore the change.",
+        "H2": "It raises a TypeError."
+      }
+    }
+  ]
+}

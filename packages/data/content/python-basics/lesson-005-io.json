@@ -1,0 +1,82 @@
+{
+  "kind": "lesson",
+  "id": "lesson.python.basics.io",
+  "moduleId": "module.python.basics.intro",
+  "title": "Input & Output",
+  "summary": "Reading input with input(), and formatting output with print() and f-strings.",
+  "durationMinutes": 15,
+  "checkpoints": [
+    {
+      "id": "checkpoint.io.note-print",
+      "type": "note",
+      "title": "print() and input()",
+      "content": "`print()` writes text to the screen — it can take multiple values separated by commas, and adds a space between them automatically. `input(\"prompt\")` shows a prompt and waits for the user to type something, always returning it as a string, even if they typed digits.",
+      "explanation": "input() always returns a string — if you need a number, you have to convert it yourself with int() or float().",
+      "hints": {
+        "H0": "print(\"a\", \"b\") automatically puts a space between a and b.",
+        "H1": "Whatever the user types into input() comes back as text, never a number.",
+        "H2": "To do math with input, wrap it in int(...) or float(...) first."
+      }
+    },
+    {
+      "id": "checkpoint.io.code-greeting",
+      "type": "code-cell",
+      "title": "Format a greeting",
+      "content": "Given `name = \"Ada\"`, print exactly: `Hello, Ada!`",
+      "starterCode": "name = \"Ada\"\n# your code here\n",
+      "solution": "name = \"Ada\"\nprint(f\"Hello, {name}!\")",
+      "expectedOutput": "Hello, Ada!\n",
+      "explanation": "An f-string with `{name}` inserted directly, then the literal punctuation around it.",
+      "hints": {
+        "H0": "You'll need an f-string to insert the name into the sentence.",
+        "H1": "Remember the `f` prefix before the opening quote.",
+        "H2": "print(f\"Hello, {name}!\")"
+      }
+    },
+    {
+      "id": "checkpoint.io.quiz-input-type",
+      "type": "quiz-mcq",
+      "title": "Predict input()'s type",
+      "content": "A user runs `value = input(\"Enter a number: \")` and types `42`. What is `type(value)`?",
+      "options": [
+        {
+          "id": "option.io.inputtype.str",
+          "text": "<class 'str'>",
+          "isCorrect": true,
+          "explanation": "input() always returns a string, regardless of what the user typed."
+        },
+        {
+          "id": "option.io.inputtype.int",
+          "text": "<class 'int'>",
+          "isCorrect": false,
+          "explanation": "input() never converts to a number automatically — you'd need int(value) for that."
+        },
+        {
+          "id": "option.io.inputtype.error",
+          "text": "It raises an error since 42 isn't quoted.",
+          "isCorrect": false,
+          "explanation": "The user typed 42 at a prompt, not in code — input() just captures it as text, no quoting needed."
+        }
+      ],
+      "explanation": "input() always hands back a string — converting to a number is something you do afterward, explicitly.",
+      "hints": {
+        "H0": "This is true no matter what the user types, even pure digits.",
+        "H1": "Converting to a number is a separate, manual step.",
+        "H2": "type(value) is <class 'str'>."
+      }
+    },
+    {
+      "id": "checkpoint.io.fill-int-input",
+      "type": "fill-blank",
+      "title": "Convert input to a number",
+      "content": "Given `raw = input(\"Age: \")`, write an expression that converts it to an integer.",
+      "answer": "int(raw)",
+      "explanation": "Wrapping the string in int(...) parses it as a whole number.",
+      "hints": {
+        "H0": "You need the built-in that converts text digits into a number.",
+        "H1": "Wrap the variable, don't reassign input() again.",
+        "H2": "Use `int(raw)`."
+      }
+    }
+  ]
+}

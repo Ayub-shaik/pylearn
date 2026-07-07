@@ -1,0 +1,37 @@
+{
+  "kind": "module",
+  "id": "module.python.basics.control-flow",
+  "trackId": "track.python.basics",
+  "title": "Control Flow & Structure",
+  "description": "Branch, repeat, and organize logic: conditionals, loops, functions, and Python's core data structures.",
+  "summary": "Move from single statements to real program structure.",
+  "difficulty": "beginner",
+  "prerequisites": ["module.python.basics.intro"],
+  "lessons": [
+    {
+      "id": "lesson.python.basics.conditionals",
+      "title": "Conditionals",
+      "path": "./lesson-006-conditionals.json"
+    },
+    {
+      "id": "lesson.python.basics.loops",
+      "title": "Loops",
+      "path": "./lesson-007-loops.json"
+    },
+    {
+      "id": "lesson.python.basics.functions",
+      "title": "Functions",
+      "path": "./lesson-008-functions.json"
+    },
+    {
+      "id": "lesson.python.basics.lists-tuples",
+      "title": "Lists & Tuples",
+      "path": "./lesson-009-lists-tuples.json"
+    },
+    {
+      "id": "lesson.python.basics.dicts-sets",
+      "title": "Dictionaries & Sets",
+      "path": "./lesson-010-dicts-sets.json"
+    }
+  ]
+}

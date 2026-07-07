@@ -1,0 +1,82 @@
+{
+  "kind": "lesson",
+  "id": "lesson.python.basics.functions",
+  "moduleId": "module.python.basics.control-flow",
+  "title": "Functions",
+  "summary": "Package reusable logic with def, parameters, and return values.",
+  "durationMinutes": 20,
+  "checkpoints": [
+    {
+      "id": "checkpoint.functions.note-def",
+      "type": "note",
+      "title": "Defining a function",
+      "content": "`def greet(name):` starts a function definition — `name` is a parameter, a placeholder filled in when the function is called, like `greet(\"Ada\")`. `return value` sends a value back to the caller; a function with no `return` implicitly returns `None`.",
+      "explanation": "print() inside a function shows output but doesn't hand a value back to whatever called it — only return does that.",
+      "hints": {
+        "H0": "Parameters are just names that stand in for whatever gets passed in later.",
+        "H1": "return is what lets a function's result be used elsewhere, like `x = greet(\"Ada\")`.",
+        "H2": "No return statement means the function's result is None."
+      }
+    },
+    {
+      "id": "checkpoint.functions.fill-def",
+      "type": "fill-blank",
+      "title": "Write a function signature",
+      "content": "Write the `def` line (including the colon) for a function named `square` that takes one parameter, `n`.",
+      "answer": "def square(n):",
+      "explanation": "A function definition names the function, lists its parameters in parentheses, and ends the line with a colon.",
+      "hints": {
+        "H0": "Start with the `def` keyword, then the function's name.",
+        "H1": "The parameter goes inside parentheses right after the name.",
+        "H2": "Use `def square(n):`."
+      }
+    },
+    {
+      "id": "checkpoint.functions.quiz-return",
+      "type": "quiz-mcq",
+      "title": "Predict a return value",
+      "content": "Given `def double(x): return x * 2`, what does `result = double(5)` set `result` to?",
+      "options": [
+        {
+          "id": "option.functions.return.ten",
+          "text": "10",
+          "isCorrect": true,
+          "explanation": "double(5) computes 5 * 2 and returns 10, which is then assigned to result."
+        },
+        {
+          "id": "option.functions.return.none",
+          "text": "None, because the function only prints",
+          "isCorrect": false,
+          "explanation": "This function uses return, not print — it hands the computed value straight back to the caller."
+        },
+        {
+          "id": "option.functions.return.five",
+          "text": "5, the original argument",
+          "isCorrect": false,
+          "explanation": "The function computes x * 2 before returning — it doesn't just hand back the input unchanged."
+        }
+      ],
+      "explanation": "The function body computes x * 2 (5 * 2 = 10) and returns it, so result ends up bound to 10.",
+      "hints": {
+        "H0": "Look at what the return statement actually computes, not just the parameter.",
+        "H1": "5 * 2 is the expression being returned.",
+        "H2": "result is 10."
+      }
+    },
+    {
+      "id": "checkpoint.functions.code-write-call",
+      "type": "code-cell",
+      "title": "Write and call a function",
+      "content": "Define a function `add_one(n)` that returns `n + 1`, then print the result of calling it with `4`.",
+      "starterCode": "# your code here\n",
+      "solution": "def add_one(n):\n    return n + 1\n\nprint(add_one(4))",
+      "expectedOutput": "5\n",
+      "explanation": "Define the function with def and return, then call it and pass the result to print().",
+      "hints": {
+        "H0": "You need both a function definition and a call to it.",
+        "H1": "The function should return n + 1, not print it directly.",
+        "H2": "def add_one(n): return n + 1, then print(add_one(4))."
+      }
+    }
+  ]
+}

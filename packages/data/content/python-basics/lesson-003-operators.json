@@ -1,0 +1,99 @@
+{
+  "kind": "lesson",
+  "id": "lesson.python.basics.operators",
+  "moduleId": "module.python.basics.intro",
+  "title": "Operators & Expressions",
+  "summary": "Arithmetic, comparison, and logical operators, and how Python evaluates expressions.",
+  "durationMinutes": 15,
+  "checkpoints": [
+    {
+      "id": "checkpoint.operators.note-arithmetic",
+      "type": "note",
+      "title": "Arithmetic operators",
+      "content": "Python has the usual `+ - * /` plus three worth knowing early: `//` (floor division, drops the remainder), `%` (modulo, the remainder itself), and `**` (exponent). `7 // 2` is `3`, `7 % 2` is `1`, and `2 ** 3` is `8`.",
+      "explanation": "`//` and `%` always satisfy `a == (a // b) * b + (a % b)` — floor division and modulo are two halves of the same division.",
+      "hints": {
+        "H0": "Regular `/` always gives a float, even when it divides evenly.",
+        "H1": "`//` keeps only the whole-number part of the division.",
+        "H2": "`%` gives you whatever `//` left behind."
+      }
+    },
+    {
+      "id": "checkpoint.operators.quiz-floordiv",
+      "type": "quiz-mcq",
+      "title": "Predict floor division",
+      "content": "What does `17 // 5` evaluate to?",
+      "options": [
+        {
+          "id": "option.operators.floordiv.correct",
+          "text": "3",
+          "isCorrect": true,
+          "explanation": "17 divided by 5 is 3.4 — floor division drops everything after the decimal point, keeping 3."
+        },
+        {
+          "id": "option.operators.floordiv.float",
+          "text": "3.4",
+          "isCorrect": false,
+          "explanation": "That's what regular `/` would give you — `//` always returns a whole number here."
+        },
+        {
+          "id": "option.operators.floordiv.remainder",
+          "text": "2",
+          "isCorrect": false,
+          "explanation": "2 is the remainder (what `%` would give you), not the floor division result."
+        }
+      ],
+      "explanation": "`//` rounds the division result down to the nearest whole number: 17 / 5 = 3.4, floored to 3.",
+      "hints": {
+        "H0": "Work out 17 / 5 first as a regular division.",
+        "H1": "Floor division keeps only the part before the decimal point.",
+        "H2": "17 // 5 is 3."
+      }
+    },
+    {
+      "id": "checkpoint.operators.fill-comparison",
+      "type": "fill-blank",
+      "title": "Write a comparison",
+      "content": "Write an expression that checks whether the variable `age` is at least 18.",
+      "answer": "age >= 18",
+      "explanation": "`>=` means \"greater than or equal to\" — it reads left to right just like the math symbol.",
+      "hints": {
+        "H0": "\"At least\" means the value can equal the threshold too, not just exceed it.",
+        "H1": "You need a comparison operator that includes equality.",
+        "H2": "Use `age >= 18`."
+      }
+    },
+    {
+      "id": "checkpoint.operators.quiz-logical",
+      "type": "quiz-mcq",
+      "title": "Combine conditions",
+      "content": "`is_admin = True` and `is_banned = True`. What does `is_admin and not is_banned` evaluate to?",
+      "options": [
+        {
+          "id": "option.operators.logical.false",
+          "text": "False",
+          "isCorrect": true,
+          "explanation": "`not is_banned` is False (since is_banned is True), and `True and False` is False."
+        },
+        {
+          "id": "option.operators.logical.true",
+          "text": "True",
+          "isCorrect": false,
+          "explanation": "`not` flips is_banned to False first — `and` then needs both sides to be True, and this one isn't."
+        },
+        {
+          "id": "option.operators.logical.error",
+          "text": "It raises an error because you can't negate a variable.",
+          "isCorrect": false,
+          "explanation": "`not` works on any boolean value — there's no error here."
+        }
+      ],
+      "explanation": "`not` applies first, flipping is_banned (True) to False; then `and` requires both sides True, so the whole expression is False.",
+      "hints": {
+        "H0": "Work out `not is_banned` on its own first.",
+        "H1": "`and` is only True when both sides are True.",
+        "H2": "`not is_banned` is False, so the whole expression is False."
+      }
+    }
+  ]
+}

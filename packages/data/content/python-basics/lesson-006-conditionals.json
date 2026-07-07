@@ -1,0 +1,99 @@
+{
+  "kind": "lesson",
+  "id": "lesson.python.basics.conditionals",
+  "moduleId": "module.python.basics.control-flow",
+  "title": "Conditionals",
+  "summary": "Branch your program's behavior with if / elif / else, and understand truthiness.",
+  "durationMinutes": 15,
+  "checkpoints": [
+    {
+      "id": "checkpoint.conditionals.note-basics",
+      "type": "note",
+      "title": "if / elif / else",
+      "content": "`if condition:` runs its indented block only when the condition is true. `elif` checks another condition if the first was false, and `else` catches everything else. Python checks them top to bottom and stops at the first match.",
+      "explanation": "Indentation is what defines the block in Python — there are no curly braces, so consistent indentation is required, not just style.",
+      "hints": {
+        "H0": "Only one branch of an if/elif/else chain ever runs.",
+        "H1": "Python stops checking as soon as one condition matches.",
+        "H2": "else always runs if nothing above it matched."
+      }
+    },
+    {
+      "id": "checkpoint.conditionals.quiz-chain",
+      "type": "quiz-mcq",
+      "title": "Predict a branch",
+      "content": "`score = 72`, then `if score >= 90: print(\"A\")`, `elif score >= 80: print(\"B\")`, `elif score >= 70: print(\"C\")`, `else: print(\"F\")` — which one prints?",
+      "options": [
+        {
+          "id": "option.conditionals.chain.c",
+          "text": "It prints \"C\"",
+          "isCorrect": true,
+          "explanation": "72 fails the >= 90 and >= 80 checks, but passes >= 70, so that branch runs and Python stops there."
+        },
+        {
+          "id": "option.conditionals.chain.b",
+          "text": "It prints \"B\"",
+          "isCorrect": false,
+          "explanation": "72 is not >= 80, so the B branch is skipped."
+        },
+        {
+          "id": "option.conditionals.chain.f",
+          "text": "It prints \"F\"",
+          "isCorrect": false,
+          "explanation": "else only runs if every condition above it was false — but score >= 70 is true, so else never gets checked."
+        }
+      ],
+      "explanation": "Python evaluates elif conditions in order and stops at the first true one — 72 first fails >= 90 and >= 80, then matches >= 70.",
+      "hints": {
+        "H0": "Check each condition from top to bottom, in order.",
+        "H1": "72 is not >= 90 or >= 80, but it is >= 70.",
+        "H2": "The C branch runs, and nothing after it is checked."
+      }
+    },
+    {
+      "id": "checkpoint.conditionals.fill-write",
+      "type": "fill-blank",
+      "title": "Write a condition",
+      "content": "Write the `if` line (including the colon) that only runs when the variable `temperature` is above 100.",
+      "answer": "if temperature > 100:",
+      "explanation": "\"Above\" means strictly greater than, so `>` is correct — `>=` would also match exactly 100.",
+      "hints": {
+        "H0": "\"Above\" a value means strictly more than it, not equal to it.",
+        "H1": "Don't forget the colon at the end of the line.",
+        "H2": "Use `if temperature > 100:`."
+      }
+    },
+    {
+      "id": "checkpoint.conditionals.quiz-truthiness",
+      "type": "quiz-mcq",
+      "title": "Predict truthiness",
+      "content": "`items = []`. What does `if items:` do?",
+      "options": [
+        {
+          "id": "option.conditionals.truthiness.skip",
+          "text": "The block is skipped — an empty list is falsy.",
+          "isCorrect": true,
+          "explanation": "Empty collections (lists, strings, dicts, sets) are falsy in Python; only a non-empty one is truthy."
+        },
+        {
+          "id": "option.conditionals.truthiness.run",
+          "text": "The block runs — any list is truthy.",
+          "isCorrect": false,
+          "explanation": "It's the contents that matter, not the type — an empty list is falsy specifically because it has no elements."
+        },
+        {
+          "id": "option.conditionals.truthiness.error",
+          "text": "It raises a TypeError because a list isn't a boolean.",
+          "isCorrect": false,
+          "explanation": "Python doesn't require an actual boolean here — every value has a truthiness, lists included."
+        }
+      ],
+      "explanation": "Python treats empty containers (`[]`, `\"\"`, `{}`, `set()`) as falsy, and non-empty ones as truthy — no explicit length check needed.",
+      "hints": {
+        "H0": "This is about the list being empty, not about lists in general.",
+        "H1": "Empty collections of any kind are falsy in Python.",
+        "H2": "if items: is skipped when items is []."
+      }
+    }
+  ]
+}

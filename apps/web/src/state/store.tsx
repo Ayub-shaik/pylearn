@@ -33,6 +33,15 @@ import {
 import lessonGettingStartedJson from '@pylearn/data/content/python-basics/lesson-000-getting-started.json';
 import lessonVariablesJson from '@pylearn/data/content/python-basics/lesson-001-variables.json';
 import lessonTypesJson from '@pylearn/data/content/python-basics/lesson-002-types.json';
+import lessonOperatorsJson from '@pylearn/data/content/python-basics/lesson-003-operators.json';
+import lessonStringsJson from '@pylearn/data/content/python-basics/lesson-004-strings.json';
+import lessonIoJson from '@pylearn/data/content/python-basics/lesson-005-io.json';
+import lessonConditionalsJson from '@pylearn/data/content/python-basics/lesson-006-conditionals.json';
+import lessonLoopsJson from '@pylearn/data/content/python-basics/lesson-007-loops.json';
+import lessonFunctionsJson from '@pylearn/data/content/python-basics/lesson-008-functions.json';
+import lessonListsTuplesJson from '@pylearn/data/content/python-basics/lesson-009-lists-tuples.json';
+import lessonDictsSetsJson from '@pylearn/data/content/python-basics/lesson-010-dicts-sets.json';
+import moduleControlFlowJson from '@pylearn/data/content/python-basics/module-control-flow.json';
 import moduleIntroJson from '@pylearn/data/content/python-basics/module-intro.json';
 import trackJson from '@pylearn/data/content/python-basics/track.json';
 
@@ -329,38 +338,77 @@ export function useAppStore(): AppStore {
   return context;
 }
 
+interface RawModuleRef {
+  path: string;
+}
+interface RawModule {
+  id: string;
+  trackId: string;
+  title: string;
+  summary: string;
+  description?: string;
+  difficulty?: Track['modules'][number]['difficulty'];
+  tags?: string[];
+  prerequisites?: string[];
+  lessons: RawModuleRef[];
+}
+
+const LESSON_JSON_BY_PATH = new Map<string, Lesson>([
+  ['./lesson-000-getting-started.json', lessonGettingStartedJson as Lesson],
+  ['./lesson-001-variables.json', lessonVariablesJson as Lesson],
+  ['./lesson-002-types.json', lessonTypesJson as Lesson],
+  ['./lesson-003-operators.json', lessonOperatorsJson as Lesson],
+  ['./lesson-004-strings.json', lessonStringsJson as Lesson],
+  ['./lesson-005-io.json', lessonIoJson as Lesson],
+  ['./lesson-006-conditionals.json', lessonConditionalsJson as Lesson],
+  ['./lesson-007-loops.json', lessonLoopsJson as Lesson],
+  ['./lesson-008-functions.json', lessonFunctionsJson as Lesson],
+  ['./lesson-009-lists-tuples.json', lessonListsTuplesJson as Lesson],
+  ['./lesson-010-dicts-sets.json', lessonDictsSetsJson as Lesson],
+]);
+
+const MODULE_JSON_BY_PATH = new Map<string, RawModule>([
+  ['./module-intro.json', moduleIntroJson as RawModule],
+  ['./module-control-flow.json', moduleControlFlowJson as RawModule],
+]);
+
 function buildDefaultTrack(): Track {
-  const lessonMap = new Map<string, Lesson>([
-    ['./lesson-000-getting-started.json', lessonGettingStartedJson as Lesson],
-    ['./lesson-001-variables.json', lessonVariablesJson as Lesson],
-    ['./lesson-002-types.json', lessonTypesJson as Lesson],
-  ]);
+  type ModuleReference = { path: string };
+  const moduleRefs = trackJson.modules as ModuleReference[];
 
-  type LessonReference = { path: string };
-  const lessonRefs = moduleIntroJson.lessons as LessonReference[];
-  const moduleLessons = lessonRefs.map((entry: LessonReference) => {
-    const lesson = lessonMap.get(entry.path);
-    if (!lesson) {
-      throw new Error(`Missing lesson content for path ${entry.path}`);
+  const modules = moduleRefs.map((moduleRef): Track['modules'][number] => {
+    const moduleJson = MODULE_JSON_BY_PATH.get(moduleRef.path);
+    if (!moduleJson) {
+      throw new Error(`Missing module content for path ${moduleRef.path}`);
     }
-    return lesson;
-  });
 
-  const moduleIntro = {
-    id: moduleIntroJson.id,
-    trackId: moduleIntroJson.trackId,
-    title: moduleIntroJson.title,
-    summary: moduleIntroJson.summary,
-    description: moduleIntroJson.description,
-    lessons: moduleLessons,
-  } satisfies Track['modules'][number];
+    const lessons = moduleJson.lessons.map((lessonRef) => {
+      const lesson = LESSON_JSON_BY_PATH.get(lessonRef.path);
+      if (!lesson) {
+        throw new Error(`Missing lesson content for path ${lessonRef.path}`);
+      }
+      return lesson;
+    });
+
+    return {
+      id: moduleJson.id,
+      trackId: moduleJson.trackId,
+      title: moduleJson.title,
+      summary: moduleJson.summary,
+      description: moduleJson.description,
+      difficulty: moduleJson.difficulty,
+      tags: moduleJson.tags,
+      prerequisites: moduleJson.prerequisites,
+      lessons,
+    };
+  });
 
   return {
     id: trackJson.id,
     title: trackJson.title,
     summary: trackJson.summary,
     description: trackJson.description,
-    modules: [moduleIntro],
+    modules,
   };
 }
 

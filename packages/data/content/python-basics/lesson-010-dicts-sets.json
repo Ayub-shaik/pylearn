@@ -1,0 +1,99 @@
+{
+  "kind": "lesson",
+  "id": "lesson.python.basics.dicts-sets",
+  "moduleId": "module.python.basics.control-flow",
+  "title": "Dictionaries & Sets",
+  "summary": "Key-value lookups with dicts, and unique collections with sets.",
+  "durationMinutes": 15,
+  "checkpoints": [
+    {
+      "id": "checkpoint.dictssets.note-basics",
+      "type": "note",
+      "title": "Dicts and sets",
+      "content": "A dictionary, `person = {\"name\": \"Ada\", \"age\": 30}`, maps keys to values — `person[\"name\"]` gets `\"Ada\"`. A set, `unique = {1, 2, 2, 3}`, automatically drops duplicates, ending up as `{1, 2, 3}` — sets have no guaranteed order and no key-value pairing.",
+      "explanation": "Both use curly braces, but a dict always has `key: value` pairs while a set is just a collection of unique values.",
+      "hints": {
+        "H0": "Dicts use `key: value` syntax; sets are just comma-separated values.",
+        "H1": "Duplicate values in a set literal collapse down to one.",
+        "H2": "person[\"name\"] looks up the value stored under that key."
+      }
+    },
+    {
+      "id": "checkpoint.dictssets.quiz-access",
+      "type": "quiz-mcq",
+      "title": "Predict a dict lookup",
+      "content": "`scores = {\"ada\": 95, \"grace\": 88}`. What does `scores.get(\"linus\", 0)` return?",
+      "options": [
+        {
+          "id": "option.dictssets.access.zero",
+          "text": "0",
+          "isCorrect": true,
+          "explanation": ".get(key, default) returns the default value when the key isn't found, instead of raising an error."
+        },
+        {
+          "id": "option.dictssets.access.error",
+          "text": "It raises a KeyError",
+          "isCorrect": false,
+          "explanation": "That's what scores[\"linus\"] (square brackets) would do — .get() is specifically the safe alternative that doesn't raise."
+        },
+        {
+          "id": "option.dictssets.access.none",
+          "text": "None, ignoring the second argument",
+          "isCorrect": false,
+          "explanation": "None is only the default when you don't supply one yourself — here 0 was explicitly given as the fallback."
+        }
+      ],
+      "explanation": ".get(key, default) looks up the key and falls back to the provided default (0 here) if it's missing, rather than raising.",
+      "hints": {
+        "H0": "\"linus\" isn't one of the keys in the dictionary.",
+        "H1": ".get() takes a second argument specifically for this situation.",
+        "H2": "It returns 0, the fallback value."
+      }
+    },
+    {
+      "id": "checkpoint.dictssets.fill-literal",
+      "type": "fill-blank",
+      "title": "Write a dict literal",
+      "content": "Write a dictionary literal named `book` with exactly one key `\"title\"` mapped to the value `\"Dune\"`.",
+      "answer": "book = {\"title\": \"Dune\"}",
+      "explanation": "A dict literal pairs each key with its value using a colon, all inside curly braces.",
+      "hints": {
+        "H0": "Curly braces hold the key-value pairs.",
+        "H1": "Separate the key and value with a colon.",
+        "H2": "Use `book = {\"title\": \"Dune\"}`."
+      }
+    },
+    {
+      "id": "checkpoint.dictssets.quiz-set-dedup",
+      "type": "quiz-mcq",
+      "title": "Predict a set's contents",
+      "content": "What does `set([1, 2, 2, 3, 3, 3])` produce?",
+      "options": [
+        {
+          "id": "option.dictssets.dedup.correct",
+          "text": "{1, 2, 3}",
+          "isCorrect": true,
+          "explanation": "Sets only keep unique values — every duplicate collapses down to a single occurrence."
+        },
+        {
+          "id": "option.dictssets.dedup.same",
+          "text": "{1, 2, 2, 3, 3, 3}, duplicates and all",
+          "isCorrect": false,
+          "explanation": "A set can never contain duplicate values — that's its defining feature."
+        },
+        {
+          "id": "option.dictssets.dedup.error",
+          "text": "It raises an error because of the repeated values",
+          "isCorrect": false,
+          "explanation": "Duplicates aren't an error for set() — they're just silently removed."
+        }
+      ],
+      "explanation": "Converting a list to a set automatically discards duplicate values, keeping each unique value exactly once.",
+      "hints": {
+        "H0": "This is the entire reason sets exist — think about what makes them different from lists.",
+        "H1": "Count how many distinct values are in the original list.",
+        "H2": "The result is {1, 2, 3}."
+      }
+    }
+  ]
+}
