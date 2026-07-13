@@ -439,7 +439,19 @@ function findFirstUnattemptedInLesson(
 ): CheckpointRef | undefined {
   const lesson = findLesson(track, lessonId);
   if (!lesson) return undefined;
-  const attemptedIds = new Set(session.attempts.map((attempt: Attempt) => attempt.checkpointId));
+  // Only a *correct* attempt counts as done here, matching
+  // selectNextCheckpoint in @pylearn/core/engine.ts. Counting any attempt
+  // (including a wrong one never successfully retried) as "done" caused this
+  // to skip past it, and once every checkpoint in the lesson had *some*
+  // attempt, this fell through to the checkpoints[0] fallback below — i.e.
+  // resuming a lesson (Home's "Resume", or re-selecting it from Tracks)
+  // after missing even one question mid-lesson silently reset the learner
+  // back to the lesson's first checkpoint.
+  const attemptedIds = new Set(
+    session.attempts
+      .filter((attempt: Attempt) => attempt.isCorrect)
+      .map((attempt: Attempt) => attempt.checkpointId),
+  );
   const checkpoint = lesson.checkpoints.find(
     (candidate: Checkpoint) => !attemptedIds.has(candidate.id),
   );
