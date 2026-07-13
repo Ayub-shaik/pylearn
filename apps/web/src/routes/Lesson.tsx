@@ -503,7 +503,6 @@ function CheckpointContent({
           questionId={checkpoint.id}
           prompt={checkpoint.content}
           value={fillValue}
-          placeholder={checkpoint.answer}
           disabled={submitted}
           onChange={(event) => setFillValue(event.target.value)}
           onSubmitAnswer={({ value }) => {
