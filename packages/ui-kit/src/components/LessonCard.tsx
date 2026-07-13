@@ -1,6 +1,21 @@
+import { motion } from 'framer-motion';
 import type { ReactElement, ButtonHTMLAttributes, MouseEvent } from 'react';
 
-export interface LessonCardProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'> {
+// Native drag/animation event types conflict with framer-motion's own
+// (differently-shaped) handlers of the same name on motion.button, so they're
+// excluded here rather than reconciled — nothing in this codebase uses them
+// on a LessonCard.
+type NonMotionConflictingProps =
+  | 'children'
+  | 'onDrag'
+  | 'onDragStart'
+  | 'onDragEnd'
+  | 'onAnimationStart'
+  | 'onAnimationEnd'
+  | 'onAnimationIteration';
+
+export interface LessonCardProps
+  extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, NonMotionConflictingProps> {
   lessonId: string;
   title: string;
   summary: string;
@@ -36,9 +51,11 @@ export function LessonCard({
   };
 
   return (
-    <button
+    <motion.button
       {...rest}
       type="button"
+      whileHover={{ y: -2 }}
+      transition={{ duration: 0.15, ease: 'easeOut' }}
       data-component="LessonCard"
       data-lesson-id={lessonId}
       data-active={isActive ?? false}
@@ -66,6 +83,6 @@ export function LessonCard({
         ) : null}
         {typeof durationMinutes === 'number' ? <span>{durationMinutes} min</span> : null}
       </div>
-    </button>
+    </motion.button>
   );
 }

@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion';
 import type { ReactElement, HTMLAttributes } from 'react';
 
 export interface ProgressRingProps extends Omit<HTMLAttributes<HTMLDivElement>, 'children'> {
@@ -60,7 +61,7 @@ export function ProgressRing({
           stroke="#1e293b"
           strokeWidth={strokeWidth}
         />
-        <circle
+        <motion.circle
           cx={center}
           cy={center}
           r={radius}
@@ -68,7 +69,9 @@ export function ProgressRing({
           stroke={STROKE_COLOR[variant]}
           strokeWidth={strokeWidth}
           strokeDasharray={circumference}
-          strokeDashoffset={offset}
+          initial={false}
+          animate={{ strokeDashoffset: offset }}
+          transition={{ duration: 0.4, ease: 'easeOut' }}
           strokeLinecap="round"
         />
       </svg>

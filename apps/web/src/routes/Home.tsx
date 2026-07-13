@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion';
 import { useMemo } from 'react';
 import type { ReactElement } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -256,9 +257,13 @@ export function Home(): ReactElement {
 
 function FeatureCard({ title, description }: { title: string; description: string }) {
   return (
-    <div className="card space-y-2 border-l-2 border-l-accent/30 p-5">
+    <motion.div
+      whileHover={{ y: -4 }}
+      transition={{ duration: 0.15, ease: 'easeOut' }}
+      className="card space-y-2 border-l-2 border-l-accent/30 p-5"
+    >
       <h3 className="terminal-heading text-sm">{title}</h3>
       <p className="text-sm text-slate-400">{description}</p>
-    </div>
+    </motion.div>
   );
 }

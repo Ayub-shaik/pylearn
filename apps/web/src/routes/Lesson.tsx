@@ -1,3 +1,4 @@
+import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useMemo, useState } from 'react';
 import type { ReactElement } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
@@ -66,6 +67,7 @@ export function Lesson(): ReactElement {
   const [codeValue, setCodeValue] = useState('');
   const [hintStage, setHintStage] = useState<HintStage | null>(null);
   const [feedback, setFeedback] = useState<LocalFeedback | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [aiHints, setAiHints] = useState<Partial<Record<HintLevel, AiHint>>>({});
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [chatLoading, setChatLoading] = useState(false);
@@ -80,6 +82,7 @@ export function Lesson(): ReactElement {
     setFillValue('');
     setHintStage(null);
     setFeedback(null);
+    setSubmitError(null);
     setAiHints({});
     setChatMessages([]);
     setChatLoading(false);
@@ -166,17 +169,21 @@ export function Lesson(): ReactElement {
     const option = currentCheckpoint.options.find((item) => item.id === optionId);
     if (!option) return;
     setSelectedOptionId(optionId);
+    setSubmitError(null);
 
-    const result = await submitAttempt({
-      lessonId: lesson.id,
-      checkpointId: currentCheckpoint.id,
-      selectedOptionId: optionId,
-      isCorrect: option.isCorrect,
-      revealsUsed: hintUsageCount(hintStage),
-      lastHintLevel: hintStage,
-    });
-
-    applyFeedback(result);
+    try {
+      const result = await submitAttempt({
+        lessonId: lesson.id,
+        checkpointId: currentCheckpoint.id,
+        selectedOptionId: optionId,
+        isCorrect: option.isCorrect,
+        revealsUsed: hintUsageCount(hintStage),
+        lastHintLevel: hintStage,
+      });
+      applyFeedback(result);
+    } catch {
+      setSubmitError("Couldn't save that answer — check your connection and try again.");
+    }
   };
 
   const handleFillSubmit = async () => {
@@ -184,44 +191,58 @@ export function Lesson(): ReactElement {
     const expected = currentCheckpoint.answer.trim();
     const response = fillValue.trim();
     const isCorrect = response.localeCompare(expected, undefined, { sensitivity: 'accent' }) === 0;
+    setSubmitError(null);
 
-    const result = await submitAttempt({
-      lessonId: lesson.id,
-      checkpointId: currentCheckpoint.id,
-      responseText: fillValue,
-      isCorrect,
-      revealsUsed: hintUsageCount(hintStage),
-      lastHintLevel: hintStage,
-    });
-
-    applyFeedback(result);
+    try {
+      const result = await submitAttempt({
+        lessonId: lesson.id,
+        checkpointId: currentCheckpoint.id,
+        responseText: fillValue,
+        isCorrect,
+        revealsUsed: hintUsageCount(hintStage),
+        lastHintLevel: hintStage,
+      });
+      applyFeedback(result);
+    } catch {
+      setSubmitError("Couldn't save that answer — check your connection and try again.");
+    }
   };
 
   const handleCodeSubmit = async () => {
     if (!currentCheckpoint || currentCheckpoint.type !== 'code-cell' || !lesson) return;
-    const result = await submitAttempt({
-      lessonId: lesson.id,
-      checkpointId: currentCheckpoint.id,
-      responseText: codeValue,
-      isCorrect: true,
-      revealsUsed: hintUsageCount(hintStage),
-      lastHintLevel: hintStage,
-    });
+    setSubmitError(null);
 
-    applyFeedback(result);
+    try {
+      const result = await submitAttempt({
+        lessonId: lesson.id,
+        checkpointId: currentCheckpoint.id,
+        responseText: codeValue,
+        isCorrect: true,
+        revealsUsed: hintUsageCount(hintStage),
+        lastHintLevel: hintStage,
+      });
+      applyFeedback(result);
+    } catch {
+      setSubmitError("Couldn't save that answer — check your connection and try again.");
+    }
   };
 
   const handleNoteContinue = async () => {
     if (!currentCheckpoint || currentCheckpoint.type !== 'note' || !lesson) return;
-    const result = await submitAttempt({
-      lessonId: lesson.id,
-      checkpointId: currentCheckpoint.id,
-      isCorrect: true,
-      revealsUsed: 0,
-      lastHintLevel: null,
-    });
+    setSubmitError(null);
 
-    applyFeedback(result);
+    try {
+      const result = await submitAttempt({
+        lessonId: lesson.id,
+        checkpointId: currentCheckpoint.id,
+        isCorrect: true,
+        revealsUsed: 0,
+        lastHintLevel: null,
+      });
+      applyFeedback(result);
+    } catch {
+      setSubmitError("Couldn't save that — check your connection and try again.");
+    }
   };
 
   const handleChatSend = async (message: string) => {
@@ -390,32 +411,65 @@ export function Lesson(): ReactElement {
               onNoteContinue={handleNoteContinue}
             />
 
-            {feedback ? (
-              <footer className="flex items-center justify-between rounded-lg bg-slate-900/60 px-4 py-3 text-sm text-slate-200">
-                <span>
-                  {currentCheckpoint.type === 'note'
-                    ? '📝 Noted'
-                    : feedback.correct
-                      ? `✅ Correct — ${feedback.rationale}`
-                      : `❌ Incorrect — ${feedback.rationale}`}
-                </span>
-                {canProgress ? (
-                  nextRef ? (
-                    <button type="button" onClick={handleNext} className="btn btn-primary">
-                      Next checkpoint
-                    </button>
-                  ) : (
-                    <Link to="/tracks" className="btn btn-secondary">
-                      Back to tracks
-                    </Link>
-                  )
-                ) : (
-                  <button type="button" onClick={handleTryAgain} className="btn btn-primary">
-                    Try again
-                  </button>
-                )}
-              </footer>
+            {submitError ? (
+              <div
+                role="alert"
+                className="flex items-center justify-between gap-3 rounded-lg border border-red-500/30 bg-red-900/20 px-4 py-3 text-sm text-red-200"
+              >
+                <span>{submitError}</span>
+                <button
+                  type="button"
+                  className="btn btn-secondary shrink-0 py-1 text-xs"
+                  onClick={() => {
+                    if (currentCheckpoint.type === 'quiz-mcq' && selectedOptionId) {
+                      void handleMCQSubmit(selectedOptionId);
+                    } else if (currentCheckpoint.type === 'fill-blank') {
+                      void handleFillSubmit();
+                    } else if (currentCheckpoint.type === 'code-cell') {
+                      void handleCodeSubmit();
+                    } else if (currentCheckpoint.type === 'note') {
+                      void handleNoteContinue();
+                    }
+                  }}
+                >
+                  Retry
+                </button>
+              </div>
             ) : null}
+
+            <AnimatePresence>
+              {feedback ? (
+                <motion.footer
+                  initial={{ opacity: 0, y: 6, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ duration: 0.2, ease: 'easeOut' }}
+                  className="flex items-center justify-between rounded-lg bg-slate-900/60 px-4 py-3 text-sm text-slate-200"
+                >
+                  <span>
+                    {currentCheckpoint.type === 'note'
+                      ? '📝 Noted'
+                      : feedback.correct
+                        ? `✅ Correct — ${feedback.rationale}`
+                        : `❌ Incorrect — ${feedback.rationale}`}
+                  </span>
+                  {canProgress ? (
+                    nextRef ? (
+                      <button type="button" onClick={handleNext} className="btn btn-primary">
+                        Next checkpoint
+                      </button>
+                    ) : (
+                      <Link to="/tracks" className="btn btn-secondary">
+                        Back to tracks
+                      </Link>
+                    )
+                  ) : (
+                    <button type="button" onClick={handleTryAgain} className="btn btn-primary">
+                      Try again
+                    </button>
+                  )}
+                </motion.footer>
+              ) : null}
+            </AnimatePresence>
 
             {authStatus === 'authenticated' ? (
               <ChatBox

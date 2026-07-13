@@ -1,6 +1,7 @@
+import { AnimatePresence, motion } from 'framer-motion';
 import { lazy, Suspense, useState } from 'react';
 import type { ReactElement } from 'react';
-import { Link, NavLink, Route, Routes } from 'react-router-dom';
+import { Link, NavLink, Route, Routes, useLocation } from 'react-router-dom';
 
 import { SaveProgressNudge } from './components/SaveProgressNudge';
 import { Spinner } from './lib/Spinner';
@@ -37,6 +38,7 @@ const navLinkClass = ({ isActive }: { isActive: boolean }): string =>
 export function App(): ReactElement {
   const { authStatus, user } = useAppStore();
   const [menuOpen, setMenuOpen] = useState(false);
+  const location = useLocation();
 
   const accountLabel =
     authStatus === 'authenticated' ? (user?.displayName ?? 'Account') : 'Sign in';
@@ -116,16 +118,26 @@ export function App(): ReactElement {
 
       <main className="w-full flex-1 px-6 py-10">
         <Suspense fallback={<Spinner label="Loading…" />}>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/tracks" element={<Tracks />} />
-            <Route path="/lesson/:lessonId" element={<Lesson />} />
-            <Route path="/review" element={<Review />} />
-            <Route path="/settings" element={<Settings />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/onboarding" element={<Onboarding />} />
-            <Route path="/about" element={<About />} />
-          </Routes>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={location.pathname}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.15, ease: 'easeOut' }}
+            >
+              <Routes location={location}>
+                <Route path="/" element={<Home />} />
+                <Route path="/tracks" element={<Tracks />} />
+                <Route path="/lesson/:lessonId" element={<Lesson />} />
+                <Route path="/review" element={<Review />} />
+                <Route path="/settings" element={<Settings />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/onboarding" element={<Onboarding />} />
+                <Route path="/about" element={<About />} />
+              </Routes>
+            </motion.div>
+          </AnimatePresence>
         </Suspense>
       </main>
 

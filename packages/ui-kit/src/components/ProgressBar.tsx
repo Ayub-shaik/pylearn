@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion';
 import type { ReactElement, HTMLAttributes } from 'react';
 
 export interface ProgressBarProps extends Omit<HTMLAttributes<HTMLDivElement>, 'children'> {
@@ -41,9 +42,11 @@ export function ProgressBar({
         aria-valuemax={max}
         className="h-2 w-full overflow-hidden rounded-full bg-slate-800"
       >
-        <div
-          className={`${color} h-full transition-all duration-300`}
-          style={{ width: `${percent}%` }}
+        <motion.div
+          className={`${color} h-full`}
+          initial={false}
+          animate={{ width: `${percent}%` }}
+          transition={{ duration: 0.4, ease: 'easeOut' }}
         />
       </div>
       <p className="font-mono text-xs text-slate-400">
