@@ -60,6 +60,7 @@ export function Lesson(): ReactElement {
     submitAttempt,
     attempts,
     setActiveLesson,
+    setActiveCheckpoint,
   } = useAppStore();
 
   const [selectedOptionId, setSelectedOptionId] = useState<string | undefined>();
@@ -275,7 +276,12 @@ export function Lesson(): ReactElement {
 
   const handleNext = () => {
     if (nextRef) {
-      setActiveLesson(nextRef.lessonId);
+      // nextRef came straight from submitAnswer's own selectNextCheckpoint
+      // call — trust it directly rather than re-deriving "what's next"
+      // through setActiveLesson's separate lesson-scoped lookup, which is
+      // answering a different question ("where does *this* lesson resume")
+      // and previously went stale relative to this one.
+      setActiveCheckpoint(nextRef);
       if (nextRef.lessonId !== lessonId) {
         navigate(`/lesson/${nextRef.lessonId}`);
       }

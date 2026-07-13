@@ -24,6 +24,7 @@ import {
   type SubmissionFeedback,
   type SubmissionOutcome,
   type Track,
+  firstUnattemptedCheckpointInLesson,
   getSummary,
   recommendedStartingLessonId,
   resetModuleProgress,
@@ -78,6 +79,7 @@ export interface SubmitAttemptPayload {
 
 export interface AppActions {
   setActiveLesson: (_lessonId: string) => Promise<void>;
+  setActiveCheckpoint: (_ref: CheckpointRef) => Promise<void>;
   submitAttempt: (_payload: SubmitAttemptPayload) => Promise<SubmissionFeedback | undefined>;
   resetModule: (_moduleId: string) => Promise<void>;
   signIn: () => void;
@@ -186,12 +188,43 @@ export function AppStoreProvider({ children }: { children: ReactNode }): ReactEl
       if (!prev.track || !prev.session) return prev;
       const lesson = findLesson(prev.track, lessonId);
       if (!lesson) return prev;
-      const nextCheckpoint = findFirstUnattemptedInLesson(prev.track, prev.session, lessonId);
+      // Single source of truth for "where does this lesson resume" — see
+      // packages/core/src/engine.ts. This used to be re-derived here with a
+      // subtly different definition of "attempted" than the engine's own
+      // selectNextCheckpoint, which caused a real regression (missing one
+      // question, then reopening the lesson, reset the learner to
+      // checkpoint 0). Routing through the shared function makes that class
+      // of bug structurally impossible to reintroduce.
+      const nextCheckpoint = firstUnattemptedCheckpointInLesson(prev.track, prev.session, lessonId);
       const fallbackCheckpoint = lesson.checkpoints[0]?.id;
       nextSession = {
         ...prev.session,
         currentLessonId: lessonId,
         currentCheckpointId: nextCheckpoint?.checkpointId ?? fallbackCheckpoint,
+      };
+      return {
+        ...prev,
+        session: nextSession,
+      };
+    });
+
+    if (nextSession) {
+      await saveSessionState(nextSession);
+    }
+  }, []);
+
+  // Trusts a checkpoint ref the engine already computed (e.g. the `next`
+  // returned from submitAnswer) instead of re-deriving it — used to advance
+  // after a correct answer, where re-running a "find the next checkpoint"
+  // lookup a second time is exactly the duplicate-logic risk described above.
+  const setActiveCheckpoint = useCallback(async (ref: CheckpointRef) => {
+    let nextSession: SessionState | undefined;
+    setInternal((prev) => {
+      if (!prev.session) return prev;
+      nextSession = {
+        ...prev.session,
+        currentLessonId: ref.lessonId,
+        currentCheckpointId: ref.checkpointId,
       };
       return {
         ...prev,
@@ -309,6 +342,7 @@ export function AppStoreProvider({ children }: { children: ReactNode }): ReactEl
       authStatus: internal.authStatus,
       user: internal.user,
       setActiveLesson,
+      setActiveCheckpoint,
       submitAttempt,
       resetModule,
       signIn,
@@ -324,6 +358,7 @@ export function AppStoreProvider({ children }: { children: ReactNode }): ReactEl
       internal.user,
       session,
       setActiveLesson,
+      setActiveCheckpoint,
       submitAttempt,
       resetModule,
       signIn,
@@ -430,30 +465,4 @@ function findLesson(track: Track, lessonId: string): Lesson | undefined {
     if (lesson) return lesson;
   }
   return undefined;
-}
-
-function findFirstUnattemptedInLesson(
-  track: Track,
-  session: SessionState,
-  lessonId: string,
-): CheckpointRef | undefined {
-  const lesson = findLesson(track, lessonId);
-  if (!lesson) return undefined;
-  // Only a *correct* attempt counts as done here, matching
-  // selectNextCheckpoint in @pylearn/core/engine.ts. Counting any attempt
-  // (including a wrong one never successfully retried) as "done" caused this
-  // to skip past it, and once every checkpoint in the lesson had *some*
-  // attempt, this fell through to the checkpoints[0] fallback below — i.e.
-  // resuming a lesson (Home's "Resume", or re-selecting it from Tracks)
-  // after missing even one question mid-lesson silently reset the learner
-  // back to the lesson's first checkpoint.
-  const attemptedIds = new Set(
-    session.attempts
-      .filter((attempt: Attempt) => attempt.isCorrect)
-      .map((attempt: Attempt) => attempt.checkpointId),
-  );
-  const checkpoint = lesson.checkpoints.find(
-    (candidate: Checkpoint) => !attemptedIds.has(candidate.id),
-  );
-  return checkpoint ? ({ lessonId, checkpointId: checkpoint.id } as CheckpointRef) : undefined;
 }

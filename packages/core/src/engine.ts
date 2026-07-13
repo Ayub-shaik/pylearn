@@ -60,6 +60,19 @@ export function firstCheckpointOfLesson(
   return checkpoint ? { lessonId, checkpointId: checkpoint.id } : undefined;
 }
 
+// Only a *correct* attempt marks a checkpoint as done — a wrong attempt
+// must not be skipped over, otherwise the learner gets silently advanced
+// past a question they never actually got right. This is the single
+// definition of "attempted" for checkpoint-progression purposes; every
+// function in this module that needs it calls this helper instead of
+// re-deriving its own set, so the definition can't drift out of sync with
+// itself the way it once did between this file and the frontend store.
+function correctlyAttemptedIds(attempts: Attempt[]): Set<string> {
+  return new Set(
+    attempts.filter((attempt) => attempt.isCorrect).map((attempt) => attempt.checkpointId),
+  );
+}
+
 /**
  * Find the next checkpoint to work on: the current lesson's next
  * unattempted checkpoint, or the first unattempted checkpoint of the next
@@ -79,12 +92,7 @@ export function selectNextCheckpoint(
   track: Track,
   session: SessionState,
 ): CheckpointRef | undefined {
-  // Only a *correct* attempt marks a checkpoint as done — a wrong attempt
-  // must not be skipped over, otherwise the learner gets silently advanced
-  // past a question they never actually got right.
-  const attempted = new Set(
-    session.attempts.filter((attempt) => attempt.isCorrect).map((attempt) => attempt.checkpointId),
-  );
+  const attempted = correctlyAttemptedIds(session.attempts);
   const orderedLessons = flattenLessons(track);
   const currentIndex = session.currentLessonId
     ? orderedLessons.findIndex((lesson) => lesson.id === session.currentLessonId)
@@ -109,6 +117,27 @@ export function selectNextCheckpoint(
     }
   }
   return undefined;
+}
+
+/**
+ * Find the first not-yet-correctly-attempted checkpoint within one specific
+ * lesson. Unlike selectNextCheckpoint, this never looks beyond the given
+ * lesson and ignores module-completion gating — it answers "where should
+ * this particular lesson resume," not "what's next across the whole
+ * curriculum." Use this when a learner explicitly opens a lesson (a Tracks
+ * card, a bookmarked URL); use selectNextCheckpoint when auto-advancing
+ * after a correct answer.
+ */
+export function firstUnattemptedCheckpointInLesson(
+  track: Track,
+  session: SessionState,
+  lessonId: string,
+): CheckpointRef | undefined {
+  const lesson = findLesson(track, lessonId);
+  if (!lesson) return undefined;
+  const attempted = correctlyAttemptedIds(session.attempts);
+  const checkpoint = lesson.checkpoints.find((candidate) => !attempted.has(candidate.id));
+  return checkpoint ? { lessonId, checkpointId: checkpoint.id } : undefined;
 }
 
 export function submitAnswer(
@@ -186,10 +215,7 @@ export function submitAnswer(
  * something new.
  */
 export function countCompletedCheckpoints(attempts: Attempt[]): number {
-  const completed = new Set(
-    attempts.filter((attempt) => attempt.isCorrect).map((attempt) => attempt.checkpointId),
-  );
-  return completed.size;
+  return correctlyAttemptedIds(attempts).size;
 }
 
 export function getSummary(track: Track, session: SessionState): SessionSummary {
