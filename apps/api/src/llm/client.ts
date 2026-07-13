@@ -48,12 +48,18 @@ export async function generateWithOllama(options: GenerateOptions): Promise<stri
   }
 }
 
+const NVIDIA_NIM_TIMEOUT_MS = 15000;
+
 export async function generateWithNvidiaNim(options: GenerateOptions): Promise<string | undefined> {
   if (!config.llmOverflow.enabled || !config.llmOverflow.nvidiaApiKey) return undefined;
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), NVIDIA_NIM_TIMEOUT_MS);
 
   try {
     const response = await fetch(`${config.llmOverflow.nvidiaBaseUrl}/chat/completions`, {
       method: 'POST',
+      signal: controller.signal,
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${config.llmOverflow.nvidiaApiKey}`,
@@ -71,5 +77,7 @@ export async function generateWithNvidiaNim(options: GenerateOptions): Promise<s
     return data.choices?.[0]?.message?.content?.trim();
   } catch {
     return undefined;
+  } finally {
+    clearTimeout(timeout);
   }
 }

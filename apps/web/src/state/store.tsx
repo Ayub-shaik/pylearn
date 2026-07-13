@@ -41,7 +41,13 @@ import lessonLoopsJson from '@pylearn/data/content/python-basics/lesson-007-loop
 import lessonFunctionsJson from '@pylearn/data/content/python-basics/lesson-008-functions.json';
 import lessonListsTuplesJson from '@pylearn/data/content/python-basics/lesson-009-lists-tuples.json';
 import lessonDictsSetsJson from '@pylearn/data/content/python-basics/lesson-010-dicts-sets.json';
+import lessonComprehensionsJson from '@pylearn/data/content/python-basics/lesson-011-comprehensions.json';
+import lessonErrorHandlingJson from '@pylearn/data/content/python-basics/lesson-012-error-handling.json';
+import lessonFileHandlingJson from '@pylearn/data/content/python-basics/lesson-013-file-handling.json';
+import lessonModulesPackagesJson from '@pylearn/data/content/python-basics/lesson-014-modules-packages.json';
+import lessonStdlibEssentialsJson from '@pylearn/data/content/python-basics/lesson-015-stdlib-essentials.json';
 import moduleControlFlowJson from '@pylearn/data/content/python-basics/module-control-flow.json';
+import moduleIntermediateJson from '@pylearn/data/content/python-basics/module-intermediate.json';
 import moduleIntroJson from '@pylearn/data/content/python-basics/module-intro.json';
 import trackJson from '@pylearn/data/content/python-basics/track.json';
 
@@ -365,11 +371,17 @@ const LESSON_JSON_BY_PATH = new Map<string, Lesson>([
   ['./lesson-008-functions.json', lessonFunctionsJson as Lesson],
   ['./lesson-009-lists-tuples.json', lessonListsTuplesJson as Lesson],
   ['./lesson-010-dicts-sets.json', lessonDictsSetsJson as Lesson],
+  ['./lesson-011-comprehensions.json', lessonComprehensionsJson as Lesson],
+  ['./lesson-012-error-handling.json', lessonErrorHandlingJson as Lesson],
+  ['./lesson-013-file-handling.json', lessonFileHandlingJson as Lesson],
+  ['./lesson-014-modules-packages.json', lessonModulesPackagesJson as Lesson],
+  ['./lesson-015-stdlib-essentials.json', lessonStdlibEssentialsJson as Lesson],
 ]);
 
 const MODULE_JSON_BY_PATH = new Map<string, RawModule>([
   ['./module-intro.json', moduleIntroJson as RawModule],
   ['./module-control-flow.json', moduleControlFlowJson as RawModule],
+  ['./module-intermediate.json', moduleIntermediateJson as RawModule],
 ]);
 
 function buildDefaultTrack(): Track {

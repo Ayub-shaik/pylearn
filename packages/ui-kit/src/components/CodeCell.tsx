@@ -123,31 +123,41 @@ export function CodeCell({
       data-checkpoint-id={checkpointId}
       data-language={language}
       aria-label={ariaLabel ?? `Code exercise: ${prompt}`}
-      className="space-y-3"
+      className="ide-window space-y-0"
     >
-      <textarea
-        {...rest}
-        value={source}
-        disabled={disabled || isRunning}
-        onChange={(event) => {
-          setSource(event.target.value);
-          onCodeChange?.({ checkpointId, source: event.target.value });
-        }}
-        onBlur={onBlur}
-        className="w-full min-h-[8rem] rounded-md border border-slate-800 bg-slate-950 px-3 py-2 font-mono text-sm text-slate-100 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary"
-      />
-      <div className="flex items-center gap-3">
-        <button
-          type="button"
-          onClick={runCode}
-          disabled={disabled || isRunning}
-          className="btn btn-secondary"
-        >
-          {isRunning ? 'Running…' : 'Run'}
-        </button>
-        {showExpected ? <small>Expected output: {expectedOutput}</small> : null}
+      <div className="ide-window-header">
+        <span className="ide-dot bg-red-500/70" aria-hidden="true" />
+        <span className="ide-dot bg-amber-500/70" aria-hidden="true" />
+        <span className="ide-dot bg-emerald-500/70" aria-hidden="true" />
+        <span className="ide-tab ide-tab-active ml-2">solution.{isPython ? 'py' : language}</span>
       </div>
-      <OutputArea result={result} />
+      <div className="space-y-3 p-3">
+        <textarea
+          {...rest}
+          value={source}
+          disabled={disabled || isRunning}
+          onChange={(event) => {
+            setSource(event.target.value);
+            onCodeChange?.({ checkpointId, source: event.target.value });
+          }}
+          onBlur={onBlur}
+          className="w-full min-h-[8rem] rounded-md border border-slate-800 bg-slate-950 px-3 py-2 font-mono text-sm text-slate-100 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent"
+        />
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={runCode}
+            disabled={disabled || isRunning}
+            className="btn btn-secondary"
+          >
+            {isRunning ? 'Running…' : '▶ Run'}
+          </button>
+          {showExpected ? (
+            <small className="font-mono text-slate-400">Expected output: {expectedOutput}</small>
+          ) : null}
+        </div>
+        <OutputArea result={result} />
+      </div>
     </div>
   );
 }

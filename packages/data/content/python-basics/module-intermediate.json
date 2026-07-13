@@ -1,0 +1,37 @@
+{
+  "kind": "module",
+  "id": "module.python.basics.intermediate",
+  "trackId": "track.python.basics",
+  "title": "Intermediate Python",
+  "description": "Write more compact, robust, and reusable code: comprehensions, error handling, files, modules, and the standard library.",
+  "summary": "Level up from working code to code you'd actually ship.",
+  "difficulty": "intermediate",
+  "prerequisites": ["module.python.basics.control-flow"],
+  "lessons": [
+    {
+      "id": "lesson.python.basics.comprehensions",
+      "title": "Comprehensions",
+      "path": "./lesson-011-comprehensions.json"
+    },
+    {
+      "id": "lesson.python.basics.error-handling",
+      "title": "Error Handling",
+      "path": "./lesson-012-error-handling.json"
+    },
+    {
+      "id": "lesson.python.basics.file-handling",
+      "title": "File Handling",
+      "path": "./lesson-013-file-handling.json"
+    },
+    {
+      "id": "lesson.python.basics.modules-packages",
+      "title": "Modules & Packages",
+      "path": "./lesson-014-modules-packages.json"
+    },
+    {
+      "id": "lesson.python.basics.stdlib-essentials",
+      "title": "Standard Library Essentials",
+      "path": "./lesson-015-stdlib-essentials.json"
+    }
+  ]
+}

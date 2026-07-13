@@ -1,0 +1,99 @@
+{
+  "kind": "lesson",
+  "id": "lesson.python.basics.error-handling",
+  "moduleId": "module.python.basics.intermediate",
+  "title": "Error Handling",
+  "summary": "Catch problems with try/except instead of letting your program crash.",
+  "durationMinutes": 15,
+  "checkpoints": [
+    {
+      "id": "checkpoint.errors.note-basics",
+      "type": "note",
+      "title": "try, except, and what can go wrong",
+      "content": "Code inside a `try:` block runs normally, but if it raises an exception, Python jumps straight to a matching `except:` block instead of crashing the program. `except ValueError:` only catches ValueErrors — a different exception type still propagates and crashes, which is usually what you want so real bugs aren't hidden.",
+      "explanation": "Catching only the specific exceptions you expect (not a bare `except:`) keeps error handling honest — you handle what you anticipated and let genuine bugs surface.",
+      "hints": {
+        "H0": "try/except lets you recover from an expected failure instead of crashing.",
+        "H1": "The except clause only catches the exception type it names.",
+        "H2": "A bare `except:` catches everything, which usually hides real bugs — prefer naming the exception type."
+      }
+    },
+    {
+      "id": "checkpoint.errors.quiz-zerodiv",
+      "type": "quiz-mcq",
+      "title": "Predict a caught ZeroDivisionError",
+      "content": "What happens when this runs? `try: 1 / 0` then `except ZeroDivisionError: print(\"caught it\")`",
+      "options": [
+        {
+          "id": "option.errors.zerodiv.correct",
+          "text": "It prints \"caught it\" and the program keeps running normally.",
+          "isCorrect": true,
+          "explanation": "1 / 0 raises ZeroDivisionError, which the except clause catches by name, so the print runs and execution continues."
+        },
+        {
+          "id": "option.errors.zerodiv.crash",
+          "text": "It crashes with an unhandled ZeroDivisionError.",
+          "isCorrect": false,
+          "explanation": "It doesn't crash — the except clause specifically names ZeroDivisionError, so it's caught, not left unhandled."
+        },
+        {
+          "id": "option.errors.zerodiv.silent",
+          "text": "Nothing is printed — the error is silently swallowed.",
+          "isCorrect": false,
+          "explanation": "The except block explicitly runs print(\"caught it\") — catching an exception doesn't mean staying silent."
+        }
+      ],
+      "explanation": "Naming the exact exception type lets Python match the error, run the except block, and continue past the try/except normally.",
+      "hints": {
+        "H0": "Dividing by zero raises a specific, well-known exception type.",
+        "H1": "The except clause names that exact type, so it matches.",
+        "H2": "It prints \"caught it\" and continues."
+      }
+    },
+    {
+      "id": "checkpoint.errors.fill-except",
+      "type": "fill-blank",
+      "title": "Catch a specific exception",
+      "content": "After `try: age = int(user_input)`, what except clause catches invalid text and prints \"not a number\"?",
+      "answer": "except ValueError",
+      "explanation": "int() raises ValueError when given text that can't be parsed as a number, so that's the exception type to name.",
+      "hints": {
+        "H0": "You need an except clause naming a specific exception type.",
+        "H1": "Converting invalid text with int() raises a specific, well-known exception.",
+        "H2": "Use `except ValueError`."
+      }
+    },
+    {
+      "id": "checkpoint.errors.quiz-finally",
+      "type": "quiz-mcq",
+      "title": "Predict finally's behavior",
+      "content": "A `try` block has a matching `except` and also a `finally:` block. If no exception is raised at all, does the code in `finally:` still run?",
+      "options": [
+        {
+          "id": "option.errors.finally.correct",
+          "text": "Yes — finally always runs, whether or not an exception occurred.",
+          "isCorrect": true,
+          "explanation": "finally is guaranteed to run after the try block, regardless of whether an exception was raised or caught — it's for cleanup that must always happen."
+        },
+        {
+          "id": "option.errors.finally.skip",
+          "text": "No — finally only runs if an exception was actually caught.",
+          "isCorrect": false,
+          "explanation": "finally runs unconditionally — its whole purpose is guaranteed cleanup, with or without an exception."
+        },
+        {
+          "id": "option.errors.finally.error",
+          "text": "It raises a SyntaxError to have finally without an exception occurring.",
+          "isCorrect": false,
+          "explanation": "There's nothing invalid about this — finally is designed to run in every case, exception or not."
+        }
+      ],
+      "explanation": "finally runs no matter what — whether the try block succeeds, raises a caught exception, or raises an uncaught one — making it the right place for cleanup like closing a file.",
+      "hints": {
+        "H0": "finally exists specifically for code that must always run.",
+        "H1": "Its behavior doesn't depend on whether an exception happened.",
+        "H2": "Yes, finally always runs."
+      }
+    }
+  ]
+}

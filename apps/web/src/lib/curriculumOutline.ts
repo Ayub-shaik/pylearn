@@ -41,11 +41,11 @@ export const CURRICULUM: CurriculumTier[] = [
   {
     title: 'Intermediate',
     topics: [
-      { title: 'Comprehensions', status: 'planned' },
-      { title: 'Error Handling', status: 'planned' },
-      { title: 'File Handling', status: 'planned' },
-      { title: 'Modules & Packages', status: 'planned' },
-      { title: 'Standard Library Essentials', status: 'planned' },
+      { title: 'Comprehensions', status: 'built' },
+      { title: 'Error Handling', status: 'built' },
+      { title: 'File Handling', status: 'built' },
+      { title: 'Modules & Packages', status: 'built' },
+      { title: 'Standard Library Essentials', status: 'built' },
     ],
   },
   {

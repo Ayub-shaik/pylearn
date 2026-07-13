@@ -53,13 +53,13 @@ export function ResultExplainer({
           : 'border-red-500/30 bg-red-900/20 text-red-100'
       } ${onReviewLesson ? 'cursor-pointer' : ''} ${className ?? ''}`}
     >
-      <p className="font-medium">
+      <p className="font-mono font-medium">
         {isCorrect ? '✅ Correct' : '❌ Incorrect'} ·{' '}
         {displayLabel ?? `${lessonId} / ${checkpointId}`}
       </p>
       <p className="text-slate-200/90">{explanation}</p>
       {hintsUsed > 0 ? (
-        <p className="text-xs text-slate-400">
+        <p className="terminal-label">
           {hintsUsed} hint{hintsUsed === 1 ? '' : 's'} used
         </p>
       ) : null}

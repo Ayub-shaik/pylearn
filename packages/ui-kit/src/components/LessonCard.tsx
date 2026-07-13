@@ -49,19 +49,19 @@ export function LessonCard({
       onClick={handleClick}
       onFocus={onFocus}
       onBlur={onBlur}
-      className={`flex cursor-pointer items-center justify-between gap-4 rounded-lg border px-4 py-3 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-primary ${
+      className={`flex cursor-pointer items-center justify-between gap-4 rounded-lg border-l-2 border-y border-r px-4 py-3 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-accent ${
         isActive
-          ? 'border-primary bg-primary/10'
-          : 'border-slate-800 bg-slate-900/60 hover:border-slate-700 hover:bg-slate-900'
+          ? 'border-y-slate-800 border-l-accent border-r-slate-800 bg-accent/10'
+          : 'border-slate-800 bg-slate-900/60 hover:border-l-slate-600 hover:bg-slate-900'
       } ${className ?? ''}`}
     >
       <div className="min-w-0">
         <p className="truncate text-sm font-medium text-white">{title}</p>
         <p className="mt-0.5 truncate text-xs text-slate-400">{summary}</p>
       </div>
-      <div className="flex shrink-0 items-center gap-3 text-xs text-slate-400">
+      <div className="flex shrink-0 items-center gap-3 font-mono text-xs text-slate-400">
         {typeof progressPercent === 'number' ? (
-          <span className="rounded-full bg-slate-800 px-2 py-1 font-medium text-slate-200">
+          <span className="rounded-full bg-slate-800 px-2 py-1 font-medium text-accent-light">
             {progressPercent}%
           </span>
         ) : null}

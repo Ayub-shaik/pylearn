@@ -34,11 +34,14 @@ export function RoadmapSidebar({
 }: RoadmapSidebarProps): ReactElement {
   return (
     <nav aria-label="Course roadmap" className="card space-y-4 p-4">
+      <p className="terminal-label">// your path</p>
       <div className="flex items-center gap-3 border-b border-slate-800 pb-3">
         <ProgressRing value={view.overallProgressPercent} max={100} size={44} />
         <div>
-          <p className="text-sm font-semibold text-white">{view.track.title}</p>
-          <p className="text-xs text-slate-400">{view.overallProgressPercent}% complete</p>
+          <p className="terminal-heading text-sm">{view.track.title}</p>
+          <p className="font-mono text-xs text-slate-400">
+            {view.overallProgressPercent}% complete
+          </p>
         </div>
       </div>
 
@@ -53,13 +56,15 @@ export function RoadmapSidebar({
                 disabled={locked}
                 onClick={() => onSelectModule(moduleView.module.id)}
                 className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm font-medium transition-colors duration-150 ${
-                  isSelected ? 'bg-primary/20 text-white' : 'text-slate-200 hover:bg-slate-800'
+                  isSelected
+                    ? 'bg-accent/10 text-accent-light'
+                    : 'text-slate-200 hover:bg-slate-800'
                 } ${locked ? 'cursor-not-allowed opacity-50' : ''}`}
                 aria-current={isSelected ? 'true' : undefined}
               >
                 <span aria-hidden="true">{MODULE_ICON[moduleView.status]}</span>
                 <span className="flex-1 truncate">{moduleView.module.title}</span>
-                <span className="text-xs font-normal text-slate-400">
+                <span className="font-mono text-xs font-normal text-slate-400">
                   {moduleView.progressPercent}%
                 </span>
               </button>
@@ -76,7 +81,7 @@ export function RoadmapSidebar({
                         onClick={() => onSelectLesson(lessonView.lesson.id)}
                         className={`flex w-full items-center gap-2 rounded-md px-2 py-1 text-left text-xs transition-colors duration-150 ${
                           isActive
-                            ? 'bg-primary/10 text-primary-light'
+                            ? 'bg-accent/10 text-accent-light'
                             : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
                         } ${lessonLocked ? 'cursor-not-allowed opacity-50' : ''}`}
                       >

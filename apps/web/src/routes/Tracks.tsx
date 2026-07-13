@@ -101,7 +101,7 @@ export function Tracks(): ReactElement {
     <div className="space-y-6">
       <div className="card space-y-3 p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-2xl font-semibold text-white">{track.title}</h2>
+          <h2 className="terminal-heading text-2xl">{track.title}</h2>
           <StreakChip streakCount={computeCurrentStreak(attempts)} />
         </div>
         <p className="text-sm text-slate-300">{track.summary}</p>
@@ -111,7 +111,7 @@ export function Tracks(): ReactElement {
             takes Python Basics for now.
           </p>
         ) : null}
-        <p className="text-xs uppercase tracking-wide text-slate-500">
+        <p className="terminal-label">
           Checkpoints completed: {countCompletedCheckpoints(attempts)} / {totalCheckpoints} ·
           Overall mastery: {summary?.mastery.overallPercent ?? 0}%
         </p>
@@ -130,7 +130,7 @@ export function Tracks(): ReactElement {
           <section className="card space-y-4 p-6">
             <header className="flex flex-wrap items-start justify-between gap-3">
               <div>
-                <h3 className="text-xl font-semibold text-white">{selectedModule.module.title}</h3>
+                <h3 className="terminal-heading text-xl">{selectedModule.module.title}</h3>
                 <p className="mt-1 text-sm text-slate-300">{selectedModule.module.summary}</p>
               </div>
               {selectedModule.progressPercent > 0 ? (

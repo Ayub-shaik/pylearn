@@ -27,11 +27,11 @@ export function ProgressBar({
       ? 'bg-emerald-500'
       : variant === 'warning'
         ? 'bg-amber-500'
-        : 'bg-primary';
+        : 'bg-gradient-to-r from-accent to-primary';
 
   return (
     <div {...rest} className="space-y-1" aria-label={ariaLabel ?? label ?? 'Progress'}>
-      {label ? <p className="text-xs font-medium text-slate-300">{label}</p> : null}
+      {label ? <p className="terminal-label">{label}</p> : null}
       <div
         role="progressbar"
         data-component="ProgressBar"
@@ -46,7 +46,7 @@ export function ProgressBar({
           style={{ width: `${percent}%` }}
         />
       </div>
-      <p className="text-xs text-slate-400">
+      <p className="font-mono text-xs text-slate-400">
         {clampedValue}/{max} ({percent}%)
       </p>
     </div>

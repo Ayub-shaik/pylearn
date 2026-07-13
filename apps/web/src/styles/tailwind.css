@@ -20,4 +20,30 @@
   .card {
     @apply rounded-xl bg-slate-900/60 backdrop-blur border border-slate-800 shadow-lg;
   }
+
+  /* IDE control-room chrome */
+  .ide-window {
+    @apply overflow-hidden rounded-lg border border-slate-800 bg-slate-900/70 shadow-lg;
+  }
+  .ide-window-header {
+    @apply flex items-center gap-2 border-b border-slate-800 bg-slate-950/60 px-3 py-2;
+  }
+  .ide-dot {
+    @apply h-2.5 w-2.5 rounded-full;
+  }
+  .ide-tab {
+    @apply inline-flex items-center gap-1.5 rounded-t-md border-b-2 border-transparent px-3 py-1 font-mono text-xs text-slate-500;
+  }
+  .ide-tab-active {
+    @apply border-accent bg-slate-900/80 text-accent-light;
+  }
+  .terminal-label {
+    @apply font-mono text-xs uppercase tracking-widest text-slate-500;
+  }
+  .terminal-heading {
+    @apply font-mono font-semibold text-white;
+  }
+  .glow-text {
+    @apply bg-gradient-to-r from-accent-light to-primary-light bg-clip-text text-transparent;
+  }
 }

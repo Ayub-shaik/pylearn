@@ -86,7 +86,10 @@ export function QuizMCQ({
         <legend className="text-lg font-semibold text-slate-100">{question}</legend>
         <ul className="space-y-3">
           {options.map((option) => (
-            <li key={option.id} className="rounded-lg border border-slate-800 bg-slate-900/60">
+            <li
+              key={option.id}
+              className="rounded-lg border border-slate-800 bg-slate-900/60 transition-colors has-[input:checked]:border-accent/60"
+            >
               <label className="flex w-full cursor-pointer gap-3 px-4 py-3 text-sm">
                 <input
                   type="radio"
@@ -95,7 +98,7 @@ export function QuizMCQ({
                   checked={selectedId === option.id}
                   onChange={handleChange}
                   disabled={locked}
-                  className="mt-1 h-4 w-4 cursor-pointer accent-primary"
+                  className="mt-1 h-4 w-4 cursor-pointer accent-accent"
                 />
                 <span className="flex-1 text-slate-200">{option.text}</span>
               </label>

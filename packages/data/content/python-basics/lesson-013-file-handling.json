@@ -1,0 +1,99 @@
+{
+  "kind": "lesson",
+  "id": "lesson.python.basics.file-handling",
+  "moduleId": "module.python.basics.intermediate",
+  "title": "File Handling",
+  "summary": "Read and write files safely using Python's with statement.",
+  "durationMinutes": 15,
+  "checkpoints": [
+    {
+      "id": "checkpoint.files.note-basics",
+      "type": "note",
+      "title": "Opening files with `with`",
+      "content": "`with open(\"notes.txt\") as f:` opens a file and guarantees it gets closed automatically when the block ends, even if an error happens inside. Inside the block, `f.read()` returns the whole file as one string, and `f.readlines()` returns a list of lines.",
+      "explanation": "Using `with` instead of a bare `open()`/`close()` pair avoids the classic bug of forgetting to close a file, which can leak resources or leave writes unflushed to disk.",
+      "hints": {
+        "H0": "`with` sets up automatic cleanup for you.",
+        "H1": "The file is guaranteed to close when the indented block ends.",
+        "H2": "f.read() gets the whole file as a string; f.readlines() gets a list of lines."
+      }
+    },
+    {
+      "id": "checkpoint.files.quiz-autoclose",
+      "type": "quiz-mcq",
+      "title": "Predict what happens after the with block",
+      "content": "After `with open(\"data.txt\") as f: contents = f.read()` finishes, what is true about f?",
+      "options": [
+        {
+          "id": "option.files.autoclose.correct",
+          "text": "f is automatically closed — trying to read from it again would raise an error.",
+          "isCorrect": true,
+          "explanation": "The with statement closes the file the moment its indented block ends, whether it finished normally or raised an exception."
+        },
+        {
+          "id": "option.files.autoclose.stillopen",
+          "text": "f stays open until the program exits, so you can keep reading from it.",
+          "isCorrect": false,
+          "explanation": "That would be true of a bare open() without with — the whole point of with is closing it immediately when the block ends."
+        },
+        {
+          "id": "option.files.autoclose.deleted",
+          "text": "The file data.txt is deleted from disk.",
+          "isCorrect": false,
+          "explanation": "Reading and closing a file never deletes it — that would require an explicit os.remove() call."
+        }
+      ],
+      "explanation": "The with statement's whole purpose is guaranteed, automatic cleanup — the file handle closes as soon as the block exits.",
+      "hints": {
+        "H0": "with is specifically designed around automatic cleanup.",
+        "H1": "That cleanup means closing the file the moment the block ends.",
+        "H2": "f is closed — further reads on it would fail."
+      }
+    },
+    {
+      "id": "checkpoint.files.fill-write",
+      "type": "fill-blank",
+      "title": "Open a file for writing",
+      "content": "Write the with statement that opens \"log.txt\" for writing (not reading) and binds it to the name f.",
+      "answer": "with open(\"log.txt\", \"w\") as f:",
+      "explanation": "The second argument to open() is the mode — \"w\" opens for writing, creating the file if needed or overwriting it if it already exists.",
+      "hints": {
+        "H0": "open() takes a second argument controlling read vs write mode.",
+        "H1": "The mode string for writing is a single letter.",
+        "H2": "Use with open(\"log.txt\", \"w\") as f:"
+      }
+    },
+    {
+      "id": "checkpoint.files.quiz-modes",
+      "type": "quiz-mcq",
+      "title": "Choose the append mode",
+      "content": "Which mode string opens a file so new writes are added to the end, without erasing what's already there?",
+      "options": [
+        {
+          "id": "option.files.modes.correct",
+          "text": "\"a\"",
+          "isCorrect": true,
+          "explanation": "\"a\" (append) opens the file for writing but starts at the end, preserving existing content instead of overwriting it."
+        },
+        {
+          "id": "option.files.modes.w",
+          "text": "\"w\"",
+          "isCorrect": false,
+          "explanation": "\"w\" (write) truncates the file first — anything already in it is erased before your new writes go in."
+        },
+        {
+          "id": "option.files.modes.r",
+          "text": "\"r\"",
+          "isCorrect": false,
+          "explanation": "\"r\" (read) opens the file read-only — attempting to write would raise an error."
+        }
+      ],
+      "explanation": "\"a\" is the append mode — it's the one mode that adds to existing content instead of replacing or merely reading it.",
+      "hints": {
+        "H0": "Three common modes are read, write, and append.",
+        "H1": "Only one of them preserves existing content while still allowing writes.",
+        "H2": "Use \"a\" for append."
+      }
+    }
+  ]
+}

@@ -1,0 +1,99 @@
+{
+  "kind": "lesson",
+  "id": "lesson.python.basics.comprehensions",
+  "moduleId": "module.python.basics.intermediate",
+  "title": "Comprehensions",
+  "summary": "Build a new list, dict, or set from an existing one in a single readable line.",
+  "durationMinutes": 15,
+  "checkpoints": [
+    {
+      "id": "checkpoint.comprehensions.note-basics",
+      "type": "note",
+      "title": "One line instead of a loop",
+      "content": "A list comprehension `[x * 2 for x in nums]` builds a brand-new list by applying an expression to every item in `nums` — it's shorthand for a `for` loop that appends to an empty list. You can also filter with a trailing `if`: `[x for x in nums if x > 0]` keeps only the positive values.",
+      "explanation": "Comprehensions don't do anything a loop can't — they're just a more compact, more Pythonic way to write the common 'build a new collection from an old one' pattern.",
+      "hints": {
+        "H0": "Read it right to left: the expression first, then where the items come from, then an optional filter.",
+        "H1": "`[x * 2 for x in nums]` means 'for each x in nums, put x * 2 in the new list'.",
+        "H2": "It's equivalent to: result = []; for x in nums: result.append(x * 2)."
+      }
+    },
+    {
+      "id": "checkpoint.comprehensions.quiz-predict",
+      "type": "quiz-mcq",
+      "title": "Predict a list comprehension's result",
+      "content": "What does `[n * n for n in [1, 2, 3, 4]]` evaluate to?",
+      "options": [
+        {
+          "id": "option.comprehensions.predict.correct",
+          "text": "[1, 4, 9, 16]",
+          "isCorrect": true,
+          "explanation": "Each item n is squared (n * n) and collected into the new list, in the same order."
+        },
+        {
+          "id": "option.comprehensions.predict.original",
+          "text": "[1, 2, 3, 4]",
+          "isCorrect": false,
+          "explanation": "That's the original list unchanged — the comprehension actually applies n * n to every item."
+        },
+        {
+          "id": "option.comprehensions.predict.sum",
+          "text": "30",
+          "isCorrect": false,
+          "explanation": "A list comprehension builds a list, not a single summed number — that would need sum() around it."
+        }
+      ],
+      "explanation": "List comprehensions apply the leading expression to every item, producing a new list of the same length.",
+      "hints": {
+        "H0": "The expression before `for` is applied to every item.",
+        "H1": "n * n means each number gets squared.",
+        "H2": "The result is [1, 4, 9, 16]."
+      }
+    },
+    {
+      "id": "checkpoint.comprehensions.fill-filter",
+      "type": "fill-blank",
+      "title": "Filter with a comprehension",
+      "content": "Given `nums = [3, -1, 4, -2, 5]`, write a list comprehension that keeps only the positive numbers.",
+      "answer": "[n for n in nums if n > 0]",
+      "explanation": "The trailing `if n > 0` filters out any item that doesn't satisfy the condition before it's added to the new list.",
+      "hints": {
+        "H0": "Comprehensions support an optional `if` clause after the `for`.",
+        "H1": "The condition goes at the end: `for n in nums if <condition>`.",
+        "H2": "Use `[n for n in nums if n > 0]`."
+      }
+    },
+    {
+      "id": "checkpoint.comprehensions.quiz-dict",
+      "type": "quiz-mcq",
+      "title": "Recognize a dict comprehension",
+      "content": "Which expression builds a dictionary mapping each word in `words` to its length?",
+      "options": [
+        {
+          "id": "option.comprehensions.dict.correct",
+          "text": "{w: len(w) for w in words}",
+          "isCorrect": true,
+          "explanation": "Curly braces with a key:value pair before the for clause build a dict comprehension — one entry per word."
+        },
+        {
+          "id": "option.comprehensions.dict.list",
+          "text": "[w: len(w) for w in words]",
+          "isCorrect": false,
+          "explanation": "Square brackets build a list, and a list can't hold key:value pairs this way — that syntax isn't valid Python."
+        },
+        {
+          "id": "option.comprehensions.dict.wrongorder",
+          "text": "{len(w): w for w in words}",
+          "isCorrect": false,
+          "explanation": "That maps length to word instead — the key comes first, so this reverses which side is the key and which is the value."
+        }
+      ],
+      "explanation": "A dict comprehension uses `{key_expr: value_expr for item in iterable}` — curly braces plus a colon-separated pair.",
+      "hints": {
+        "H0": "Dict comprehensions use curly braces, like a dict literal.",
+        "H1": "The part before the colon becomes the key; after the colon is the value.",
+        "H2": "Use {w: len(w) for w in words} to map each word to its length."
+      }
+    }
+  ]
+}

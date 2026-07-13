@@ -1,0 +1,99 @@
+{
+  "kind": "lesson",
+  "id": "lesson.python.basics.stdlib-essentials",
+  "moduleId": "module.python.basics.intermediate",
+  "title": "Standard Library Essentials",
+  "summary": "A tour of the built-in modules you'll reach for constantly: json, datetime, os, and random.",
+  "durationMinutes": 15,
+  "checkpoints": [
+    {
+      "id": "checkpoint.stdlib.note-basics",
+      "type": "note",
+      "title": "Batteries included",
+      "content": "Python ships with a huge standard library, no installation needed. `json` converts between Python objects and JSON text (`json.dumps`/`json.loads`), `datetime` handles dates and times, `os` talks to the operating system (paths, environment variables), and `random` generates pseudo-random values.",
+      "explanation": "Reaching for the standard library before installing a third-party package is usually the right default — it's already there, well-documented, and has no extra dependency to manage.",
+      "hints": {
+        "H0": "\"Batteries included\" is Python's own description of its standard library.",
+        "H1": "json, datetime, os, and random are four of the most commonly used modules.",
+        "H2": "None of these need pip install — they ship with Python itself."
+      }
+    },
+    {
+      "id": "checkpoint.stdlib.quiz-json",
+      "type": "quiz-mcq",
+      "title": "Predict json.dumps output",
+      "content": "What does `json.dumps({\"name\": \"Ada\", \"age\": 30})` return?",
+      "options": [
+        {
+          "id": "option.stdlib.json.correct",
+          "text": "'{\"name\": \"Ada\", \"age\": 30}' — a JSON-formatted string",
+          "isCorrect": true,
+          "explanation": "json.dumps() serializes a Python dict into a JSON-formatted string, ready to write to a file or send over a network."
+        },
+        {
+          "id": "option.stdlib.json.samedict",
+          "text": "The same dictionary object, unchanged",
+          "isCorrect": false,
+          "explanation": "dumps means 'dump string' — it converts the dict into a string representation, not the original dict object."
+        },
+        {
+          "id": "option.stdlib.json.error",
+          "text": "It raises a TypeError because dicts can't be converted to JSON",
+          "isCorrect": false,
+          "explanation": "Dicts with simple key/value types are exactly what json.dumps is built to handle — no error here."
+        }
+      ],
+      "explanation": "json.dumps() turns a Python value into its JSON text representation — the reverse operation, json.loads(), parses JSON text back into a Python value.",
+      "hints": {
+        "H0": "The name dumps hints at 'dump to a string'.",
+        "H1": "It returns text, not the original Python object.",
+        "H2": "It returns a JSON-formatted string like '{\"name\": \"Ada\", \"age\": 30}'."
+      }
+    },
+    {
+      "id": "checkpoint.stdlib.fill-random",
+      "type": "fill-blank",
+      "title": "Pick a random item from a list",
+      "content": "Given `options = [\"rock\", \"paper\", \"scissors\"]` and the random module already imported, write an expression that picks one random item from the list.",
+      "answer": "random.choice(options)",
+      "explanation": "random.choice() takes any sequence and returns one randomly selected element from it — the standard way to pick one item at random.",
+      "hints": {
+        "H0": "The random module has a function specifically for picking one item from a sequence.",
+        "H1": "It takes the sequence itself as its only argument.",
+        "H2": "Use random.choice(options)."
+      }
+    },
+    {
+      "id": "checkpoint.stdlib.quiz-datetime",
+      "type": "quiz-mcq",
+      "title": "Predict datetime.now()'s type",
+      "content": "After `import datetime`, what kind of value does `datetime.datetime.now()` return?",
+      "options": [
+        {
+          "id": "option.stdlib.datetime.correct",
+          "text": "A datetime object representing the current date and time",
+          "isCorrect": true,
+          "explanation": "datetime.now() returns a datetime object you can format, compare, or extract fields (year, month, hour, ...) from."
+        },
+        {
+          "id": "option.stdlib.datetime.string",
+          "text": "A plain string like \"2026-07-08\"",
+          "isCorrect": false,
+          "explanation": "It returns a structured datetime object, not a string — you'd call .strftime() on it to get a formatted string."
+        },
+        {
+          "id": "option.stdlib.datetime.timestamp",
+          "text": "An integer number of seconds since 1970",
+          "isCorrect": false,
+          "explanation": "That's what time.time() returns — datetime.now() returns a richer datetime object, not a raw integer timestamp."
+        }
+      ],
+      "explanation": "datetime.now() returns a datetime object, which is a structured representation you can format or do date arithmetic with, not a plain string or number.",
+      "hints": {
+        "H0": "The datetime module deals in structured objects, not raw text or numbers.",
+        "H1": "That object holds year, month, day, hour, minute, and second as accessible fields.",
+        "H2": "It's a datetime object representing the current date and time."
+      }
+    }
+  ]
+}

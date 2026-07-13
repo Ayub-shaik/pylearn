@@ -34,7 +34,7 @@ export function StreakChip({
           onActivate?.(streakCount);
         }
       }}
-      className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors duration-150 ${
+      className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 font-mono text-xs font-medium transition-colors duration-150 ${
         streakCount > 0
           ? 'border-amber-500/40 bg-amber-500/10 text-amber-300'
           : 'border-slate-800 bg-slate-900/60 text-slate-400'

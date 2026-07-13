@@ -10,7 +10,7 @@ export interface ProgressRingProps extends Omit<HTMLAttributes<HTMLDivElement>, 
 }
 
 const STROKE_COLOR: Record<NonNullable<ProgressRingProps['variant']>, string> = {
-  default: '#6366f1',
+  default: '#22d3ee',
   success: '#10b981',
   warning: '#f59e0b',
 };
@@ -72,7 +72,9 @@ export function ProgressRing({
           strokeLinecap="round"
         />
       </svg>
-      <span className="absolute text-[0.6rem] font-medium text-slate-200">{percent}%</span>
+      <span className="absolute font-mono text-[0.6rem] font-semibold text-slate-200">
+        {percent}%
+      </span>
     </div>
   );
 }

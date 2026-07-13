@@ -1,0 +1,99 @@
+{
+  "kind": "lesson",
+  "id": "lesson.python.basics.modules-packages",
+  "moduleId": "module.python.basics.intermediate",
+  "title": "Modules & Packages",
+  "summary": "Reuse code across files with import, and understand where Python looks for it.",
+  "durationMinutes": 15,
+  "checkpoints": [
+    {
+      "id": "checkpoint.modules.note-basics",
+      "type": "note",
+      "title": "import brings code into your file",
+      "content": "`import math` makes everything in the math module available as `math.something` — for example `math.sqrt(16)`. `from math import sqrt` instead pulls just that one name directly into your file, so you'd call it as `sqrt(16)` without the prefix.",
+      "explanation": "A module is just a `.py` file full of reusable code; a package is a folder of modules. Both get pulled in with import — Python doesn't re-run the same module twice even if it's imported from multiple places.",
+      "hints": {
+        "H0": "import gives you access to a module's contents through a prefix.",
+        "H1": "from X import Y pulls just one name in directly, no prefix needed.",
+        "H2": "math.sqrt(16) and (after `from math import sqrt`) sqrt(16) do the same thing."
+      }
+    },
+    {
+      "id": "checkpoint.modules.quiz-prefix",
+      "type": "quiz-mcq",
+      "title": "Predict the correct call",
+      "content": "After `import random`, which call correctly gets a random integer between 1 and 6?",
+      "options": [
+        {
+          "id": "option.modules.prefix.correct",
+          "text": "random.randint(1, 6)",
+          "isCorrect": true,
+          "explanation": "Plain `import random` requires the module prefix on every call to something inside it."
+        },
+        {
+          "id": "option.modules.prefix.noprefix",
+          "text": "randint(1, 6)",
+          "isCorrect": false,
+          "explanation": "That would only work after `from random import randint` — a plain `import random` still requires the random. prefix."
+        },
+        {
+          "id": "option.modules.prefix.dict",
+          "text": "random[\"randint\"](1, 6)",
+          "isCorrect": false,
+          "explanation": "Modules aren't accessed like dictionaries — use dot notation (module.name), not square-bracket indexing."
+        }
+      ],
+      "explanation": "A plain `import module_name` always requires the dotted prefix (module_name.thing) to reach anything inside it.",
+      "hints": {
+        "H0": "Plain import keeps everything behind a prefix.",
+        "H1": "The prefix is the module's own name, followed by a dot.",
+        "H2": "Use random.randint(1, 6)."
+      }
+    },
+    {
+      "id": "checkpoint.modules.fill-alias",
+      "type": "fill-blank",
+      "title": "Import with a shorter alias",
+      "content": "Write an import statement that imports the datetime module under the shorter local name dt.",
+      "answer": "import datetime as dt",
+      "explanation": "The `as` keyword after an import gives the module a different local name — dt.datetime.now() instead of the longer datetime.datetime.now().",
+      "hints": {
+        "H0": "There's a keyword that renames an import right where you write it.",
+        "H1": "It goes between the module name and the alias: import X as Y.",
+        "H2": "Use import datetime as dt."
+      }
+    },
+    {
+      "id": "checkpoint.modules.quiz-from-import",
+      "type": "quiz-mcq",
+      "title": "Predict a from-import's scope",
+      "content": "After `from math import pi`, which of these works without raising a NameError?",
+      "options": [
+        {
+          "id": "option.modules.fromimport.correct",
+          "text": "print(pi)",
+          "isCorrect": true,
+          "explanation": "`from math import pi` pulls the name pi directly into your file's namespace, so it's usable on its own."
+        },
+        {
+          "id": "option.modules.fromimport.prefixed",
+          "text": "print(math.pi)",
+          "isCorrect": false,
+          "explanation": "The math module itself was never imported here — only the single name pi was, so math.pi raises a NameError for math."
+        },
+        {
+          "id": "option.modules.fromimport.sqrt",
+          "text": "print(math.sqrt(pi))",
+          "isCorrect": false,
+          "explanation": "Same issue — math itself isn't available, only the specific name pi that was imported from it."
+        }
+      ],
+      "explanation": "`from X import Y` brings only Y into scope directly, not the module X itself — using X.anything afterward fails.",
+      "hints": {
+        "H0": "from-import is selective — it only brings in what you name.",
+        "H1": "The module's own name doesn't become available this way.",
+        "H2": "Only print(pi) works."
+      }
+    }
+  ]
+}

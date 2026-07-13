@@ -9,6 +9,21 @@ module.exports = {
           light: '#6366f1',
           dark: '#4338ca',
         },
+        accent: {
+          DEFAULT: '#22d3ee',
+          light: '#67e8f9',
+          dark: '#0891b2',
+        },
+      },
+      fontFamily: {
+        mono: [
+          '"JetBrains Mono"',
+          'ui-monospace',
+          'SFMono-Regular',
+          'Menlo',
+          'Consolas',
+          'monospace',
+        ],
       },
     },
   },

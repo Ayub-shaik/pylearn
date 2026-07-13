@@ -7,7 +7,7 @@ import { loadLocalOnboarding } from '../lib/onboarding';
 import { Spinner } from '../lib/Spinner';
 import { useAppStore } from '../state/store';
 
-import { buildRoadmapView, computeCurrentStreak } from '@pylearn/core';
+import { buildRoadmapView, computeCurrentStreak, countCompletedCheckpoints } from '@pylearn/core';
 import type { RoadmapModuleView } from '@pylearn/core';
 import { ProgressRing, StreakChip } from '@pylearn/ui-kit';
 
@@ -74,30 +74,48 @@ export function Home(): ReactElement {
   if (!hasOnboarded) {
     return (
       <div className="space-y-8">
-        <div className="card mx-auto max-w-3xl space-y-5 p-8 text-center">
-          <p className="text-xs font-semibold uppercase tracking-widest text-primary-light">
-            No signup required
-          </p>
-          <h2 className="text-3xl font-semibold text-white sm:text-4xl">
-            Start learning Python right now — check your knowledge, or learn from scratch.
-          </h2>
-          <p className="mx-auto max-w-xl text-sm text-slate-300 sm:text-base">
-            Jump straight into hands-on checkpoints — multiple choice, fill-in-the-blank, and code
-            you actually run — with an AI tutor that explains why an answer is right or wrong, not
-            just what the answer is. No account, no email, no wall — start now, and save your
-            progress later only if you want to.
-          </p>
-          <div className="flex flex-wrap justify-center gap-3 pt-2">
-            <Link to="/onboarding" className="btn btn-primary">
-              Start now — no signup
-            </Link>
-            <Link to="/tracks" className="btn btn-secondary">
-              Browse lessons first
-            </Link>
+        <div className="card grid gap-8 p-8 lg:grid-cols-[3fr_2fr] lg:items-center">
+          <div className="space-y-5">
+            <p className="terminal-label text-accent-light">
+              &gt; boot.sequence // No signup required
+            </p>
+            <h2 className="font-mono text-3xl font-semibold text-white sm:text-4xl lg:text-5xl">
+              Start learning <span className="glow-text">Python</span> right now — check your
+              knowledge, or learn from scratch.
+            </h2>
+            <p className="max-w-xl text-sm text-slate-300 sm:text-base">
+              Jump straight into hands-on checkpoints — multiple choice, fill-in-the-blank, and code
+              you actually run — with an AI tutor that explains why an answer is right or wrong, not
+              just what the answer is. No account, no email, no wall — start now, and save your
+              progress later only if you want to.
+            </p>
+            <div className="flex flex-wrap gap-3 pt-2">
+              <Link to="/onboarding" className="btn btn-primary">
+                Start now — no signup
+              </Link>
+              <Link to="/tracks" className="btn btn-secondary">
+                Browse lessons first
+              </Link>
+            </div>
+          </div>
+          <div className="ide-window text-left">
+            <div className="ide-window-header">
+              <span className="ide-dot bg-red-500/70" aria-hidden="true" />
+              <span className="ide-dot bg-amber-500/70" aria-hidden="true" />
+              <span className="ide-dot bg-emerald-500/70" aria-hidden="true" />
+              <span className="ide-tab ide-tab-active ml-2">hello.py</span>
+            </div>
+            <pre className="px-4 py-3 text-sm text-slate-200">
+              <code>{`>>> name = input("What's your name? ")
+>>> print(f"Hello, {name}!")
+
+# This is a real checkpoint — you run it,
+# not just read it.`}</code>
+            </pre>
           </div>
         </div>
 
-        <div className="mx-auto grid max-w-3xl gap-4 sm:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <FeatureCard
             title="Practice, not just reading"
             description="Every lesson ends in a checkpoint you actually solve — a quiz, a fill-in-the-blank, or real code you run yourself."
@@ -116,9 +134,11 @@ export function Home(): ReactElement {
           />
         </div>
 
-        <div className="card mx-auto max-w-3xl space-y-4 p-6">
-          <h3 className="text-lg font-semibold text-white">How it works</h3>
-          <ol className="space-y-3 text-sm text-slate-300">
+        <RoadmapPreview />
+
+        <div className="card space-y-4 p-6">
+          <h3 className="terminal-heading text-lg">How it works</h3>
+          <ol className="grid gap-3 text-sm text-slate-300 sm:grid-cols-2">
             <li>
               <span className="font-medium text-white">1. Tell us where you're starting from.</span>{' '}
               Two quick questions place you at the right lesson.
@@ -138,31 +158,30 @@ export function Home(): ReactElement {
             </li>
           </ol>
         </div>
-
-        <RoadmapPreview />
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      <div className="card mx-auto max-w-3xl space-y-4 p-6">
+      <div className="card space-y-4 p-6">
         <header className="space-y-2">
-          <h2 className="text-2xl font-semibold text-white">Welcome back to PyLearn</h2>
+          <p className="terminal-label text-accent-light">&gt; session.resume</p>
+          <h2 className="terminal-heading text-2xl">Welcome back to PyLearn</h2>
           <p className="text-sm text-slate-300">
             You're learning Python through hands-on checkpoints, not passive reading. Pick up a
             lesson, continue where you left off, or see the full roadmap below.
           </p>
         </header>
         <div className="flex flex-wrap gap-3">
-          <Link to="/tracks" className="btn btn-primary">
-            Browse Tracks
-          </Link>
           {canResume ? (
-            <button type="button" className="btn btn-secondary" onClick={handleResume}>
+            <button type="button" className="btn btn-primary" onClick={handleResume}>
               Resume {currentLesson ? currentLesson.title : 'last lesson'}
             </button>
           ) : null}
+          <Link to="/tracks" className={canResume ? 'btn btn-secondary' : 'btn btn-primary'}>
+            Browse Tracks
+          </Link>
           <Link
             to="/settings"
             className="ml-auto self-center text-xs text-slate-500 underline hover:text-slate-300"
@@ -172,58 +191,73 @@ export function Home(): ReactElement {
         </div>
       </div>
 
-      {roadmap ? (
-        <div className="card mx-auto max-w-3xl space-y-4 p-6">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <h3 className="text-lg font-semibold text-white">Your Python roadmap</h3>
-              <p className="text-sm text-slate-400">{roadmap.track.title}</p>
+      <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
+        <div className="space-y-6">
+          {roadmap ? (
+            <div className="card space-y-4 p-6">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div>
+                  <h3 className="terminal-heading text-lg">Your Python roadmap</h3>
+                  <p className="text-sm text-slate-400">{roadmap.track.title}</p>
+                </div>
+                <ProgressRing value={roadmap.overallProgressPercent} max={100} size={48} />
+              </div>
+              <ul className="space-y-2">
+                {roadmap.modules.map((moduleView) => (
+                  <li
+                    key={moduleView.module.id}
+                    className="flex items-center justify-between gap-3 rounded-md border border-slate-800 bg-slate-900/60 px-3 py-2 text-sm"
+                  >
+                    <span className="flex items-center gap-2 text-slate-200">
+                      <span aria-hidden="true">{MODULE_ICON[moduleView.status]}</span>
+                      {moduleView.module.title}
+                    </span>
+                    <span className="font-mono text-xs text-accent-light">
+                      {moduleView.progressPercent}%
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              <Link to="/tracks" className="text-sm text-primary-light underline">
+                View full roadmap →
+              </Link>
             </div>
-            <ProgressRing value={roadmap.overallProgressPercent} max={100} size={48} />
-          </div>
-          <ul className="space-y-2">
-            {roadmap.modules.map((moduleView) => (
-              <li
-                key={moduleView.module.id}
-                className="flex items-center justify-between gap-3 rounded-md border border-slate-800 bg-slate-900/60 px-3 py-2 text-sm"
-              >
-                <span className="flex items-center gap-2 text-slate-200">
-                  <span aria-hidden="true">{MODULE_ICON[moduleView.status]}</span>
-                  {moduleView.module.title}
-                </span>
-                <span className="text-xs text-slate-400">{moduleView.progressPercent}%</span>
-              </li>
-            ))}
-          </ul>
-          <Link to="/tracks" className="text-sm text-primary-light underline">
-            View full roadmap →
-          </Link>
-        </div>
-      ) : null}
+          ) : null}
 
-      <RoadmapPreview />
-
-      {session && session.attempts.length > 0 ? (
-        <div className="card mx-auto max-w-3xl space-y-3 p-6">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <h3 className="text-lg font-semibold text-white">Recent Activity</h3>
-            <StreakChip streakCount={computeCurrentStreak(session.attempts)} />
-          </div>
-          <p className="text-sm text-slate-300">
-            Attempts logged: {session.attempts.length} · Overall mastery:{' '}
-            {summary?.mastery.overallPercent ?? 0}% · Last checkpoint:{' '}
-            {session.attempts[session.attempts.length - 1]?.checkpointId ?? 'n/a'}
-          </p>
+          <RoadmapPreview />
         </div>
-      ) : null}
+
+        {session && session.attempts.length > 0 ? (
+          <div className="card h-fit space-y-3 p-6">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h3 className="terminal-heading text-lg">Recent Activity</h3>
+              <StreakChip streakCount={computeCurrentStreak(session.attempts)} />
+            </div>
+            <p className="text-sm text-slate-300">
+              {(() => {
+                const mastery = summary?.mastery.overallPercent ?? 0;
+                const count = countCompletedCheckpoints(session.attempts);
+                const streak = computeCurrentStreak(session.attempts);
+                const streakPhrase =
+                  streak > 1
+                    ? `on a ${streak}-day streak`
+                    : streak === 1
+                      ? 'started a streak today'
+                      : 'time to get back to it';
+                return `You've worked through ${count} checkpoint${count === 1 ? '' : 's'} so far, at ${mastery}% mastery — ${streakPhrase}.`;
+              })()}
+            </p>
+          </div>
+        ) : null}
+      </div>
     </div>
   );
 }
 
 function FeatureCard({ title, description }: { title: string; description: string }) {
   return (
-    <div className="card space-y-2 p-5">
-      <h3 className="text-sm font-semibold text-white">{title}</h3>
+    <div className="card space-y-2 border-l-2 border-l-accent/30 p-5">
+      <h3 className="terminal-heading text-sm">{title}</h3>
       <p className="text-sm text-slate-400">{description}</p>
     </div>
   );

@@ -325,7 +325,7 @@ export function Lesson(): ReactElement {
       <div className="card p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl font-semibold text-white">{lesson.title}</h1>
+            <h1 className="terminal-heading text-2xl">{lesson.title}</h1>
             <p className="mt-1 text-sm text-slate-300">{lesson.summary}</p>
           </div>
           <div className="w-full sm:w-64">
@@ -335,97 +335,104 @@ export function Lesson(): ReactElement {
       </div>
 
       {currentCheckpoint ? (
-        <div className="card p-6 space-y-5">
-          <header className="space-y-2">
-            <p className="text-xs uppercase tracking-wide text-slate-400">
+        <div className="ide-window">
+          <div className="ide-window-header">
+            <span className="ide-dot bg-red-500/70" aria-hidden="true" />
+            <span className="ide-dot bg-amber-500/70" aria-hidden="true" />
+            <span className="ide-dot bg-emerald-500/70" aria-hidden="true" />
+            <span className="ide-tab ide-tab-active ml-2">
               {lessonId?.replace('lesson.', '').replace(/\./g, ' › ')}
-            </p>
-            <h2 className="text-xl font-semibold text-white">{currentCheckpoint.title}</h2>
-            {/* quiz-mcq and fill-blank already render checkpoint.content themselves
-                (as the legend / field label) — showing it here too would repeat it. */}
-            {currentCheckpoint.type !== 'quiz-mcq' && currentCheckpoint.type !== 'fill-blank' ? (
-              <p className="text-sm text-slate-300">{currentCheckpoint.content}</p>
-            ) : null}
-          </header>
-
-          {currentCheckpoint.type !== 'note' && (currentCheckpoint.hints || revealText) ? (
-            <div className="space-y-1">
-              <HintPanel
-                h0={aiHints.H0?.content ?? currentCheckpoint.hints?.H0}
-                h1={aiHints.H1?.content ?? currentCheckpoint.hints?.H1}
-                h2={aiHints.H2?.content ?? currentCheckpoint.hints?.H2}
-                revealedAnswerText={revealText}
-                level={hintStage}
-                disabled={Boolean(feedback)}
-                onNextLevel={handleHintAdvance}
-              />
-              {isHintLevel(hintStage) &&
-              aiHints[hintStage] &&
-              aiHints[hintStage]?.provider !== 'template' ? (
-                <p className="text-xs text-slate-500">
-                  Rephrased by our AI tutor ({aiHints[hintStage]?.provider})
-                </p>
+            </span>
+          </div>
+          <div className="space-y-5 p-6">
+            <header className="space-y-2">
+              <h2 className="terminal-heading text-xl">{currentCheckpoint.title}</h2>
+              {/* quiz-mcq and fill-blank already render checkpoint.content themselves
+                  (as the legend / field label) — showing it here too would repeat it. */}
+              {currentCheckpoint.type !== 'quiz-mcq' && currentCheckpoint.type !== 'fill-blank' ? (
+                <p className="text-sm text-slate-300">{currentCheckpoint.content}</p>
               ) : null}
-            </div>
-          ) : null}
+            </header>
 
-          <CheckpointContent
-            checkpoint={currentCheckpoint}
-            selectedOptionId={selectedOptionId}
-            setSelectedOptionId={setSelectedOptionId}
-            fillValue={fillValue}
-            setFillValue={setFillValue}
-            codeValue={codeValue}
-            setCodeValue={setCodeValue}
-            submitted={Boolean(feedback)}
-            onMCQSubmit={handleMCQSubmit}
-            onFillSubmit={handleFillSubmit}
-            onCodeSubmit={handleCodeSubmit}
-            onNoteContinue={handleNoteContinue}
-          />
+            {currentCheckpoint.type !== 'note' && (currentCheckpoint.hints || revealText) ? (
+              <div className="space-y-1">
+                <HintPanel
+                  h0={aiHints.H0?.content ?? currentCheckpoint.hints?.H0}
+                  h1={aiHints.H1?.content ?? currentCheckpoint.hints?.H1}
+                  h2={aiHints.H2?.content ?? currentCheckpoint.hints?.H2}
+                  revealedAnswerText={revealText}
+                  level={hintStage}
+                  disabled={Boolean(feedback)}
+                  onNextLevel={handleHintAdvance}
+                />
+                {isHintLevel(hintStage) &&
+                aiHints[hintStage] &&
+                aiHints[hintStage]?.provider !== 'template' ? (
+                  <p className="text-xs text-slate-500">
+                    Rephrased by our AI tutor ({aiHints[hintStage]?.provider})
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
 
-          {feedback ? (
-            <footer className="flex items-center justify-between rounded-lg bg-slate-900/60 px-4 py-3 text-sm text-slate-200">
-              <span>
-                {currentCheckpoint.type === 'note'
-                  ? '📝 Noted'
-                  : feedback.correct
-                    ? `✅ Correct — ${feedback.rationale}`
-                    : `❌ Incorrect — ${feedback.rationale}`}
-              </span>
-              {canProgress ? (
-                nextRef ? (
-                  <button type="button" onClick={handleNext} className="btn btn-primary">
-                    Next checkpoint
-                  </button>
-                ) : (
-                  <Link to="/tracks" className="btn btn-secondary">
-                    Back to tracks
-                  </Link>
-                )
-              ) : (
-                <button type="button" onClick={handleTryAgain} className="btn btn-primary">
-                  Try again
-                </button>
-              )}
-            </footer>
-          ) : null}
-
-          {authStatus === 'authenticated' ? (
-            <ChatBox
-              messages={chatMessages}
-              suggestedPrompts={CHAT_PROMPTS_BY_TYPE[currentCheckpoint.type]}
-              onSend={(message) => void handleChatSend(message)}
-              loading={chatLoading}
+            <CheckpointContent
+              checkpoint={currentCheckpoint}
+              selectedOptionId={selectedOptionId}
+              setSelectedOptionId={setSelectedOptionId}
+              fillValue={fillValue}
+              setFillValue={setFillValue}
+              codeValue={codeValue}
+              setCodeValue={setCodeValue}
+              submitted={Boolean(feedback)}
+              onMCQSubmit={handleMCQSubmit}
+              onFillSubmit={handleFillSubmit}
+              onCodeSubmit={handleCodeSubmit}
+              onNoteContinue={handleNoteContinue}
             />
-          ) : (
-            <p className="text-xs text-slate-500">
-              <Link to="/login" className="text-primary-light underline">
-                Sign in
-              </Link>{' '}
-              to ask our AI tutor a question about this checkpoint.
-            </p>
-          )}
+
+            {feedback ? (
+              <footer className="flex items-center justify-between rounded-lg bg-slate-900/60 px-4 py-3 text-sm text-slate-200">
+                <span>
+                  {currentCheckpoint.type === 'note'
+                    ? '📝 Noted'
+                    : feedback.correct
+                      ? `✅ Correct — ${feedback.rationale}`
+                      : `❌ Incorrect — ${feedback.rationale}`}
+                </span>
+                {canProgress ? (
+                  nextRef ? (
+                    <button type="button" onClick={handleNext} className="btn btn-primary">
+                      Next checkpoint
+                    </button>
+                  ) : (
+                    <Link to="/tracks" className="btn btn-secondary">
+                      Back to tracks
+                    </Link>
+                  )
+                ) : (
+                  <button type="button" onClick={handleTryAgain} className="btn btn-primary">
+                    Try again
+                  </button>
+                )}
+              </footer>
+            ) : null}
+
+            {authStatus === 'authenticated' ? (
+              <ChatBox
+                messages={chatMessages}
+                suggestedPrompts={CHAT_PROMPTS_BY_TYPE[currentCheckpoint.type]}
+                onSend={(message) => void handleChatSend(message)}
+                loading={chatLoading}
+              />
+            ) : (
+              <p className="text-xs text-slate-500">
+                <Link to="/login" className="text-primary-light underline">
+                  Sign in
+                </Link>{' '}
+                to ask our AI tutor a question about this checkpoint.
+              </p>
+            )}
+          </div>
         </div>
       ) : (
         <div className="card p-6">

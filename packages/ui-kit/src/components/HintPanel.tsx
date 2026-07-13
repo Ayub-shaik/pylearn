@@ -36,10 +36,10 @@ export function HintPanel({
     <section
       aria-live="polite"
       aria-label="Hint panel"
-      className="mt-4 rounded-md border border-slate-800 bg-slate-900/60 p-3"
+      className="mt-4 rounded-md border border-accent/20 bg-slate-900/60 p-3"
     >
       <header className="flex items-center justify-between gap-3">
-        <strong className="text-sm font-medium text-slate-200">Need a hint?</strong>
+        <strong className="terminal-label text-accent-light"># Need a hint?</strong>
         {showButton ? (
           <button
             type="button"

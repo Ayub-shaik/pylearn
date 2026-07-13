@@ -14,6 +14,11 @@
       "id": "module.python.basics.control-flow",
       "title": "Control Flow & Structure",
       "path": "./module-control-flow.json"
+    },
+    {
+      "id": "module.python.basics.intermediate",
+      "title": "Intermediate Python",
+      "path": "./module-intermediate.json"
     }
   ]
 }

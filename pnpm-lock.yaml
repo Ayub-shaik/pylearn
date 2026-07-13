@@ -119,6 +119,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@fontsource/jetbrains-mono':
+        specifier: ^5.2.8
+        version: 5.2.8
       react:
         specifier: ^19.2.0
         version: 19.2.0
@@ -1058,6 +1061,12 @@ packages:
     resolution:
       {
         integrity: sha512-h5dZWCkuZXN0PxwqaFQLxeln8/LNwQwH9popywmDCFdKfgpi4b/HoMH1lluy6P+30CG9yzzpSpwTCIPNB9T1JA==,
+      }
+
+  '@fontsource/jetbrains-mono@5.2.8':
+    resolution:
+      {
+        integrity: sha512-6w8/SG4kqvIMu7xd7wt6x3idn1Qux3p9N62s6G3rfldOUYHpWcc2FKrqf+Vo44jRvqWj2oAtTHrZXEP23oSKwQ==,
       }
 
   '@humanfs/core@0.19.1':
@@ -4758,6 +4767,8 @@ snapshots:
       '@lukeed/ms': 2.0.2
       fastify-plugin: 4.5.1
       toad-cache: 3.7.4
+
+  '@fontsource/jetbrains-mono@5.2.8': {}
 
   '@humanfs/core@0.19.1': {}
 
