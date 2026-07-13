@@ -10,9 +10,11 @@ export function useResetProgress() {
   const { authStatus, track } = useAppStore();
   const [confirming, setConfirming] = useState(false);
   const [resetting, setResetting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const confirmReset = async (): Promise<void> => {
     setResetting(true);
+    setError(null);
     try {
       if (authStatus === 'authenticated') {
         await resetProgress();
@@ -22,16 +24,23 @@ export function useResetProgress() {
           await clearSessionState(track.id);
         }
       }
-    } finally {
       window.location.href = '/';
+    } catch {
+      setError("Couldn't reset progress — check your connection and try again.");
+    } finally {
+      setResetting(false);
     }
   };
 
   return {
     confirming,
     resetting,
+    error,
     requestConfirm: () => setConfirming(true),
-    cancelConfirm: () => setConfirming(false),
+    cancelConfirm: () => {
+      setConfirming(false);
+      setError(null);
+    },
     confirmReset,
   };
 }

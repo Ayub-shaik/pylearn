@@ -20,10 +20,12 @@ export function Onboarding(): ReactElement {
   const [startingLevel, setStartingLevel] = useState<StartingLevel | null>(null);
   const [learningGoal, setLearningGoal] = useState<LearningGoal | null>(null);
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const handleFinish = async () => {
     if (!startingLevel || !learningGoal) return;
     setSaving(true);
+    setSaveError(null);
     try {
       if (authStatus === 'authenticated') {
         // Placement for the already-existing (auto-created on first page
@@ -38,8 +40,10 @@ export function Onboarding(): ReactElement {
         // wait for the write to finish before the hard navigation below.
         await setActiveLesson(recommendedStartingLessonId(startingLevel));
       }
-    } finally {
       window.location.href = '/tracks';
+    } catch {
+      setSaveError("Couldn't save your answers — check your connection and try again.");
+      setSaving(false);
     }
   };
 
@@ -135,6 +139,11 @@ export function Onboarding(): ReactElement {
             >
               {saving ? 'Saving…' : 'Start learning'}
             </button>
+            {saveError ? (
+              <p role="alert" className="text-sm text-red-300">
+                {saveError}
+              </p>
+            ) : null}
           </div>
         ) : null}
       </div>

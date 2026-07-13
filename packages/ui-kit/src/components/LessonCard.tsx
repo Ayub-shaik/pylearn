@@ -1,6 +1,6 @@
-import type { ReactElement, HTMLAttributes, MouseEvent } from 'react';
+import type { ReactElement, ButtonHTMLAttributes, MouseEvent } from 'react';
 
-export interface LessonCardProps extends Omit<HTMLAttributes<HTMLDivElement>, 'children'> {
+export interface LessonCardProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'> {
   lessonId: string;
   title: string;
   summary: string;
@@ -28,7 +28,7 @@ export function LessonCard({
   'aria-label': ariaLabel,
   ...rest
 }: LessonCardProps): ReactElement {
-  const handleClick = (event: MouseEvent<HTMLDivElement>) => {
+  const handleClick = (event: MouseEvent<HTMLButtonElement>) => {
     onClick?.(event);
     if (!event.defaultPrevented) {
       onSelectLesson?.(lessonId);
@@ -36,10 +36,9 @@ export function LessonCard({
   };
 
   return (
-    <div
+    <button
       {...rest}
-      role="group"
-      tabIndex={0}
+      type="button"
       data-component="LessonCard"
       data-lesson-id={lessonId}
       data-active={isActive ?? false}
@@ -49,7 +48,7 @@ export function LessonCard({
       onClick={handleClick}
       onFocus={onFocus}
       onBlur={onBlur}
-      className={`flex cursor-pointer items-center justify-between gap-4 rounded-lg border-l-2 border-y border-r px-4 py-3 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-accent ${
+      className={`flex w-full cursor-pointer items-center justify-between gap-4 rounded-lg border-l-2 border-y border-r px-4 py-3 text-left transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-accent ${
         isActive
           ? 'border-y-slate-800 border-l-accent border-r-slate-800 bg-accent/10'
           : 'border-slate-800 bg-slate-900/60 hover:border-l-slate-600 hover:bg-slate-900'
@@ -67,6 +66,6 @@ export function LessonCard({
         ) : null}
         {typeof durationMinutes === 'number' ? <span>{durationMinutes} min</span> : null}
       </div>
-    </div>
+    </button>
   );
 }

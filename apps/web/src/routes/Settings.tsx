@@ -3,7 +3,8 @@ import { useAppStore } from '../state/store';
 
 export function Settings() {
   const { authStatus } = useAppStore();
-  const { confirming, resetting, requestConfirm, cancelConfirm, confirmReset } = useResetProgress();
+  const { confirming, resetting, error, requestConfirm, cancelConfirm, confirmReset } =
+    useResetProgress();
 
   return (
     <div className="space-y-6">
@@ -40,26 +41,33 @@ export function Settings() {
             scratch — as if you were a brand new learner. This can&apos;t be undone.
           </p>
           {confirming ? (
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="text-sm text-red-300">
-                Reset everything? This can&apos;t be undone.
-              </span>
-              <button
-                type="button"
-                className="btn btn-primary bg-red-600 hover:bg-red-500"
-                disabled={resetting}
-                onClick={() => void confirmReset()}
-              >
-                {resetting ? 'Resetting…' : 'Yes, reset everything'}
-              </button>
-              <button
-                type="button"
-                className="btn btn-secondary"
-                disabled={resetting}
-                onClick={cancelConfirm}
-              >
-                Cancel
-              </button>
+            <div className="space-y-2">
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="text-sm text-red-300">
+                  Reset everything? This can&apos;t be undone.
+                </span>
+                <button
+                  type="button"
+                  className="btn btn-primary bg-red-600 hover:bg-red-500"
+                  disabled={resetting}
+                  onClick={() => void confirmReset()}
+                >
+                  {resetting ? 'Resetting…' : 'Yes, reset everything'}
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  disabled={resetting}
+                  onClick={cancelConfirm}
+                >
+                  Cancel
+                </button>
+              </div>
+              {error ? (
+                <p role="alert" className="text-sm text-red-300">
+                  {error}
+                </p>
+              ) : null}
             </div>
           ) : (
             <button type="button" className="btn btn-secondary" onClick={requestConfirm}>

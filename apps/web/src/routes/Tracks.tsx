@@ -29,6 +29,7 @@ export function Tracks(): ReactElement {
   const [manualSelectedModuleId, setManualSelectedModuleId] = useState<string | undefined>();
   const [confirmingResetModuleId, setConfirmingResetModuleId] = useState<string | undefined>();
   const [resettingModule, setResettingModule] = useState(false);
+  const [retakeError, setRetakeError] = useState<string | null>(null);
 
   const roadmap = useMemo(() => {
     if (!track || !session) return undefined;
@@ -85,11 +86,14 @@ export function Tracks(): ReactElement {
 
   const handleRetakeModule = async (moduleId: string) => {
     setResettingModule(true);
+    setRetakeError(null);
     try {
       await resetModule(moduleId);
+      setConfirmingResetModuleId(undefined);
+    } catch {
+      setRetakeError("Couldn't retake this module — check your connection and try again.");
     } finally {
       setResettingModule(false);
-      setConfirmingResetModuleId(undefined);
     }
   };
 
@@ -135,24 +139,34 @@ export function Tracks(): ReactElement {
               </div>
               {selectedModule.progressPercent > 0 ? (
                 confirmingResetModuleId === selectedModule.module.id ? (
-                  <div className="flex shrink-0 items-center gap-2 text-xs">
-                    <span className="text-red-300">Retake this module? Progress is cleared.</span>
-                    <button
-                      type="button"
-                      className="btn btn-primary bg-red-600 py-1 text-xs hover:bg-red-500"
-                      disabled={resettingModule}
-                      onClick={() => void handleRetakeModule(selectedModule.module.id)}
-                    >
-                      {resettingModule ? 'Resetting…' : 'Yes, retake'}
-                    </button>
-                    <button
-                      type="button"
-                      className="btn btn-secondary py-1 text-xs"
-                      disabled={resettingModule}
-                      onClick={() => setConfirmingResetModuleId(undefined)}
-                    >
-                      Cancel
-                    </button>
+                  <div className="flex shrink-0 flex-col items-end gap-2 text-xs">
+                    <div className="flex items-center gap-2">
+                      <span className="text-red-300">Retake this module? Progress is cleared.</span>
+                      <button
+                        type="button"
+                        className="btn btn-primary bg-red-600 py-1 text-xs hover:bg-red-500"
+                        disabled={resettingModule}
+                        onClick={() => void handleRetakeModule(selectedModule.module.id)}
+                      >
+                        {resettingModule ? 'Resetting…' : 'Yes, retake'}
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-secondary py-1 text-xs"
+                        disabled={resettingModule}
+                        onClick={() => {
+                          setConfirmingResetModuleId(undefined);
+                          setRetakeError(null);
+                        }}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                    {retakeError ? (
+                      <p role="alert" className="text-red-300">
+                        {retakeError}
+                      </p>
+                    ) : null}
                   </div>
                 ) : (
                   <button

@@ -1,17 +1,23 @@
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import type { ReactElement } from 'react';
 import { Link, NavLink, Route, Routes } from 'react-router-dom';
 
 import { SaveProgressNudge } from './components/SaveProgressNudge';
-import { About } from './routes/About';
+import { Spinner } from './lib/Spinner';
 import { Home } from './routes/Home';
 import { Lesson } from './routes/Lesson';
-import { Login } from './routes/Login';
-import { Onboarding } from './routes/Onboarding';
 import { Review } from './routes/Review';
-import { Settings } from './routes/Settings';
 import { Tracks } from './routes/Tracks';
 import { useAppStore } from './state/store';
+
+// Less-frequently-visited routes are code-split out of the main bundle —
+// the core learning loop (Home/Tracks/Lesson/Review) stays eager.
+const About = lazy(() => import('./routes/About').then((m) => ({ default: m.About })));
+const Login = lazy(() => import('./routes/Login').then((m) => ({ default: m.Login })));
+const Onboarding = lazy(() =>
+  import('./routes/Onboarding').then((m) => ({ default: m.Onboarding })),
+);
+const Settings = lazy(() => import('./routes/Settings').then((m) => ({ default: m.Settings })));
 
 const navigation = [
   { to: '/', label: 'Home' },
@@ -109,16 +115,18 @@ export function App(): ReactElement {
       </header>
 
       <main className="w-full flex-1 px-6 py-10">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/tracks" element={<Tracks />} />
-          <Route path="/lesson/:lessonId" element={<Lesson />} />
-          <Route path="/review" element={<Review />} />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/onboarding" element={<Onboarding />} />
-          <Route path="/about" element={<About />} />
-        </Routes>
+        <Suspense fallback={<Spinner label="Loading…" />}>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/tracks" element={<Tracks />} />
+            <Route path="/lesson/:lessonId" element={<Lesson />} />
+            <Route path="/review" element={<Review />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/onboarding" element={<Onboarding />} />
+            <Route path="/about" element={<About />} />
+          </Routes>
+        </Suspense>
       </main>
 
       <footer className="border-t border-slate-800 bg-slate-900/60">
