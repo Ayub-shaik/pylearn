@@ -21,3 +21,5 @@ out/
 coverage/
 .DS_Store
 .gstack/
+temp/
+/*.jpeg

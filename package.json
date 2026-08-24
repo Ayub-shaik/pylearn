@@ -13,7 +13,7 @@
     "format": "prettier --write .",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "build": "echo \"(placeholder) build root workspaces\"",
-    "test": "echo \"(placeholder) run tests\" && exit 0",
+    "test": "vitest run",
     "data:lint": "tsx scripts/data-lint.ts",
     "dev": "pnpm --filter @pylearn/web dev"
   },
@@ -42,7 +42,8 @@
     "react-dom": "^19.2.0",
     "tailwindcss": "^4.1.14",
     "tsx": "^4.20.6",
-    "typescript": "^5.6.0"
+    "typescript": "^5.6.0",
+    "vitest": "^3.2.7"
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx,json,md,yml,yaml}": [

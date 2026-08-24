@@ -10,6 +10,7 @@ import { useAppStore } from '../state/store';
 import { advanceHintLevel, countCompletedCheckpoints, hintUsageCount } from '@pylearn/core';
 import type {
   Checkpoint,
+  CheckpointRef,
   HintLevel,
   HintStage,
   Lesson as LessonType,
@@ -165,6 +166,27 @@ export function Lesson(): ReactElement {
     setFeedback({ correct: result.correct, rationale: result.rationale, raw: result });
   };
 
+  const advanceToCheckpoint = (next: CheckpointRef) => {
+    // `next` came straight from submitAnswer's own selectNextCheckpoint
+    // call — trust it directly rather than re-deriving "what's next"
+    // through setActiveLesson's separate lesson-scoped lookup, which is
+    // answering a different question ("where does *this* lesson resume")
+    // and previously went stale relative to this one.
+    setActiveCheckpoint(next);
+    if (next.lessonId !== lessonId) {
+      navigate(`/lesson/${next.lessonId}`);
+    }
+    setHintStage(null);
+    setFeedback(null);
+    setSelectedOptionId(undefined);
+    setFillValue('');
+    if (currentCheckpoint?.type === 'code-cell') {
+      setCodeValue(currentCheckpoint.starterCode ?? '');
+    } else {
+      setCodeValue('');
+    }
+  };
+
   const handleMCQSubmit = async (optionId: string) => {
     if (!currentCheckpoint || currentCheckpoint.type !== 'quiz-mcq' || !lesson) return;
     const option = currentCheckpoint.options.find((item) => item.id === optionId);
@@ -240,7 +262,15 @@ export function Lesson(): ReactElement {
         revealsUsed: 0,
         lastHintLevel: null,
       });
-      applyFeedback(result);
+      if (result?.next) {
+        // Notes have no right/wrong feedback to review, so a single click
+        // submits AND advances — no second "Next checkpoint" step.
+        advanceToCheckpoint(result.next);
+      } else {
+        // Nowhere to auto-advance (end of track or a mastery gate) — show
+        // the "Noted" footer with its "Back to tracks" link instead.
+        applyFeedback(result);
+      }
     } catch {
       setSubmitError("Couldn't save that — check your connection and try again.");
     }
@@ -275,26 +305,8 @@ export function Lesson(): ReactElement {
   };
 
   const handleNext = () => {
-    if (nextRef) {
-      // nextRef came straight from submitAnswer's own selectNextCheckpoint
-      // call — trust it directly rather than re-deriving "what's next"
-      // through setActiveLesson's separate lesson-scoped lookup, which is
-      // answering a different question ("where does *this* lesson resume")
-      // and previously went stale relative to this one.
-      setActiveCheckpoint(nextRef);
-      if (nextRef.lessonId !== lessonId) {
-        navigate(`/lesson/${nextRef.lessonId}`);
-      }
-    }
-    setHintStage(null);
-    setFeedback(null);
-    setSelectedOptionId(undefined);
-    setFillValue('');
-    if (currentCheckpoint?.type === 'code-cell') {
-      setCodeValue(currentCheckpoint.starterCode ?? '');
-    } else {
-      setCodeValue('');
-    }
+    if (!nextRef) return;
+    advanceToCheckpoint(nextRef);
   };
 
   const handleTryAgain = () => {

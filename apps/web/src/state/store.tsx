@@ -26,6 +26,7 @@ import {
   type Track,
   firstUnattemptedCheckpointInLesson,
   getSummary,
+  reconcileSessionCursor,
   recommendedStartingLessonId,
   resetModuleProgress,
   startSession,
@@ -119,6 +120,13 @@ export function AppStoreProvider({ children }: { children: ReactNode }): ReactEl
 
         if (me.authenticated) {
           const remote = await getRemoteSession(track.id);
+          // An authenticated session is never persisted locally (see
+          // setActiveLesson/setActiveCheckpoint below) — this only clears
+          // anything left over from before that was true, e.g. a previous
+          // anonymous visitor's progress on a shared machine, so it can't be
+          // mistaken for this signed-in account's progress or leak back out
+          // to the next anonymous visitor after sign-out.
+          void clearSessionState(track.id);
           if (!cancelled) {
             setInternal({
               track,
@@ -147,7 +155,13 @@ export function AppStoreProvider({ children }: { children: ReactNode }): ReactEl
         const persisted = await loadSessionState(track.id);
         let session: SessionState;
         if (persisted) {
-          session = persisted;
+          // Correct a stale cursor left over from a since-fixed bug (or any
+          // future one of the same shape) — see reconcileSessionCursor's
+          // own doc comment. Never touches the attempts themselves.
+          session = reconcileSessionCursor(track, persisted);
+          if (session !== persisted) {
+            persistSession(session);
+          }
         } else {
           const startingLevel = loadLocalOnboarding()?.startingLevel;
           const startingLessonId = startingLevel
@@ -179,11 +193,19 @@ export function AppStoreProvider({ children }: { children: ReactNode }): ReactEl
 
   const signOut = useCallback(async () => {
     await remoteLogout().catch(() => undefined);
+    // Nothing about an authenticated session should be left in IndexedDB
+    // (see the mount effect above), but clear it defensively here too —
+    // this is the moment a shared machine most plausibly hands off to
+    // whoever uses the browser next.
+    if (internal.track) {
+      await clearSessionState(internal.track.id);
+    }
     window.location.reload();
-  }, []);
+  }, [internal.track]);
 
   const setActiveLesson = useCallback(async (lessonId: string) => {
     let nextSession: SessionState | undefined;
+    let isAnonymous = false;
     setInternal((prev) => {
       if (!prev.track || !prev.session) return prev;
       const lesson = findLesson(prev.track, lessonId);
@@ -202,13 +224,18 @@ export function AppStoreProvider({ children }: { children: ReactNode }): ReactEl
         currentLessonId: lessonId,
         currentCheckpointId: nextCheckpoint?.checkpointId ?? fallbackCheckpoint,
       };
+      isAnonymous = prev.authStatus !== 'authenticated';
       return {
         ...prev,
         session: nextSession,
       };
     });
 
-    if (nextSession) {
+    // An authenticated session's cursor lives on the server (submitAttempt
+    // pushes it there on every answer); persisting it to this browser's
+    // IndexedDB too would leak it to the next anonymous visitor on a shared
+    // machine, and there's nothing here to read it back from anyway.
+    if (nextSession && isAnonymous) {
       await saveSessionState(nextSession);
     }
   }, []);
@@ -219,6 +246,7 @@ export function AppStoreProvider({ children }: { children: ReactNode }): ReactEl
   // lookup a second time is exactly the duplicate-logic risk described above.
   const setActiveCheckpoint = useCallback(async (ref: CheckpointRef) => {
     let nextSession: SessionState | undefined;
+    let isAnonymous = false;
     setInternal((prev) => {
       if (!prev.session) return prev;
       nextSession = {
@@ -226,13 +254,14 @@ export function AppStoreProvider({ children }: { children: ReactNode }): ReactEl
         currentLessonId: ref.lessonId,
         currentCheckpointId: ref.checkpointId,
       };
+      isAnonymous = prev.authStatus !== 'authenticated';
       return {
         ...prev,
         session: nextSession,
       };
     });
 
-    if (nextSession) {
+    if (nextSession && isAnonymous) {
       await saveSessionState(nextSession);
     }
   }, []);
@@ -249,7 +278,8 @@ export function AppStoreProvider({ children }: { children: ReactNode }): ReactEl
           revealsUsed: payload.revealsUsed,
           lastHintLevel: payload.lastHintLevel ?? undefined,
         });
-        setInternal((prev) => ({ ...prev, session: response.session }));
+        const preservedSession = pinCursorToSubmittedCheckpoint(response.session, payload);
+        setInternal((prev) => ({ ...prev, session: preservedSession }));
         return response.feedback;
       }
 
@@ -270,12 +300,7 @@ export function AppStoreProvider({ children }: { children: ReactNode }): ReactEl
         outcome = submitAnswer(prev.track, prev.session, attempt);
         if (!outcome) return prev;
 
-        const preservedSession: SessionState = {
-          ...outcome.session,
-          currentLessonId: payload.lessonId,
-          currentCheckpointId: payload.checkpointId,
-        };
-
+        const preservedSession = pinCursorToSubmittedCheckpoint(outcome.session, payload);
         outcome.session = preservedSession;
 
         return {
@@ -456,6 +481,28 @@ function buildDefaultTrack(): Track {
     summary: trackJson.summary,
     description: trackJson.description,
     modules,
+  };
+}
+
+// The engine (run locally or on the server, via submitAnswer) already
+// advances the cursor forward on a correct answer — that's exactly right
+// for the *next* explicit "Next checkpoint" click, but the UI needs to keep
+// rendering the checkpoint just answered until then, or Lesson.tsx's
+// reset-on-checkpoint-change effect wipes the feedback before the learner
+// ever sees it. This used to only be applied on the anonymous branch of
+// submitAttempt; the authenticated branch adopted the server's
+// already-advanced cursor as-is, so a signed-in learner's correct answers
+// never displayed and, on a lesson's last checkpoint, silently bounced them
+// to an undefined-lesson state. Shared here so both branches can't drift
+// apart on this again.
+function pinCursorToSubmittedCheckpoint(
+  session: SessionState,
+  payload: SubmitAttemptPayload,
+): SessionState {
+  return {
+    ...session,
+    currentLessonId: payload.lessonId,
+    currentCheckpointId: payload.checkpointId,
   };
 }
 

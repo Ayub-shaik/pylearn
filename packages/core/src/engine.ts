@@ -140,6 +140,65 @@ export function firstUnattemptedCheckpointInLesson(
   return checkpoint ? { lessonId, checkpointId: checkpoint.id } : undefined;
 }
 
+/**
+ * Validate a persisted session's cursor against its own attempt history, and
+ * correct it if it's stale — without touching a single attempt record.
+ *
+ * The cursor (currentLessonId/currentCheckpointId) is a redundant pointer;
+ * the attempts array is the actual source of truth for progress. Today's
+ * earlier bug proved the two can drift: a session whose cursor was corrupted
+ * by since-fixed logic, then persisted to a learner's browser, has no way to
+ * repair itself just because the code shipped a fix — the bad cursor sits in
+ * their IndexedDB forever. This closes that gap generically on every load.
+ *
+ * A cursor pointing at a checkpoint with no correct attempt yet (including
+ * one answered wrong and never retried) is left completely untouched — that's
+ * the legitimate "stay here until you get it right" case submitAnswer relies
+ * on. A cursor pointing at an unresolvable checkpoint (bad/stale content) is
+ * always recomputed via selectNextCheckpoint, the same function that governs
+ * normal curriculum-wide advancement.
+ *
+ * The remaining case — cursor points at a checkpoint that's already
+ * correctly attempted — is genuinely ambiguous from the session data alone:
+ * it's either (a) a leftover corrupted cursor from the historical bug, or
+ * (b) setActiveLesson's own deliberate "review a fully completed lesson"
+ * fallback to checkpoints[0], which produces the exact same shape. The two
+ * are told apart by scope: if this SAME lesson still has a checkpoint the
+ * learner hasn't correctly done (firstUnattemptedCheckpointInLesson finds
+ * one), the cursor is stale and gets corrected to it. If the whole lesson is
+ * genuinely done, the cursor is left alone rather than jumped elsewhere in
+ * the curriculum — a page reload while reviewing a completed lesson should
+ * not relocate the learner to unrelated content they weren't looking at.
+ */
+export function reconcileSessionCursor(track: Track, session: SessionState): SessionState {
+  if (!session.currentLessonId || !session.currentCheckpointId) return session;
+
+  const checkpoint = resolveCheckpoint(track, {
+    lessonId: session.currentLessonId,
+    checkpointId: session.currentCheckpointId,
+  });
+
+  if (!checkpoint) {
+    const corrected = selectNextCheckpoint(track, session);
+    return {
+      ...session,
+      currentLessonId: corrected?.lessonId ?? session.currentLessonId,
+      currentCheckpointId: corrected?.checkpointId,
+    };
+  }
+
+  const attempted = correctlyAttemptedIds(session.attempts);
+  if (!attempted.has(session.currentCheckpointId)) return session;
+
+  const nextInLesson = firstUnattemptedCheckpointInLesson(track, session, session.currentLessonId);
+  if (!nextInLesson) return session;
+
+  return {
+    ...session,
+    currentCheckpointId: nextInLesson.checkpointId,
+  };
+}
+
 export function submitAnswer(
   track: Track,
   session: SessionState,
