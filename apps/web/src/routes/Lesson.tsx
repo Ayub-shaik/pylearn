@@ -373,6 +373,33 @@ export function Lesson(): ReactElement {
         </div>
       </div>
 
+      {lesson.externalClassroomUrl || lesson.embedClassroomPath ? (
+        <div className="card space-y-4 p-6">
+          <h2 className="text-lg font-semibold text-white">OpenMAIC classroom</h2>
+          {lesson.externalClassroomUrl ? (
+            <p className="text-sm text-slate-300">
+              Explore this topic in the immersive AI classroom:{' '}
+              <a
+                className="text-primary-light underline"
+                href={lesson.externalClassroomUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Open in OpenMAIC
+              </a>
+            </p>
+          ) : null}
+          {lesson.embedClassroomPath ? (
+            <iframe
+              title="OpenMAIC classroom embed"
+              src={lesson.embedClassroomPath}
+              className="h-[min(70vh,640px)] w-full rounded-lg border border-slate-700 bg-slate-900"
+              sandbox="allow-scripts allow-same-origin allow-forms"
+            />
+          ) : null}
+        </div>
+      ) : null}
+
       {currentCheckpoint ? (
         <div className="ide-window">
           <div className="ide-window-header">

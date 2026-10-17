@@ -5,6 +5,7 @@
   "title": "Variables in Python",
   "summary": "Introduce assignment, naming, and the REPL feedback cycle.",
   "durationMinutes": 20,
+  "externalClassroomUrl": "https://maic.tomorrowtools.dev",
   "checkpoints": [
     {
       "id": "checkpoint.variables.note-setup",

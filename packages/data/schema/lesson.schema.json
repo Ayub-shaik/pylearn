@@ -356,6 +356,16 @@
           "type": "integer",
           "minimum": 1
         },
+        "externalClassroomUrl": {
+          "type": "string",
+          "format": "uri",
+          "description": "Optional link to an OpenMAIC classroom for this lesson topic"
+        },
+        "embedClassroomPath": {
+          "type": "string",
+          "pattern": "^/classrooms/.+",
+          "description": "Optional path to static MAIC HTML export under the web app public folder"
+        },
         "checkpoints": {
           "type": "array",
           "minItems": 1,

@@ -64,6 +64,10 @@ export interface Lesson {
   summary: string;
   description?: string;
   durationMinutes: number;
+  /** Link-out to an OpenMAIC classroom for immersive coverage of this topic */
+  externalClassroomUrl?: string;
+  /** Static MAIC HTML export path (served from web public/, e.g. /classrooms/foo/index.html) */
+  embedClassroomPath?: string;
   checkpoints: Checkpoint[];
 }
 
